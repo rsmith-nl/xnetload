@@ -1,4 +1,4 @@
-/* $Id$
+/* $Id: x11-ui.c,v 1.1 1999/05/09 16:40:15 rsmith Exp $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -27,7 +27,10 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
  * --------------------------------------------------------------------
- * $Log$
+ * $Log: x11-ui.c,v $
+ * Revision 1.1  1999/05/09 16:40:15  rsmith
+ * Initial revision
+ *
  *
  *
  * Revision 1.5  1998/06/21 09:58:23  rsmith
@@ -102,6 +105,8 @@
 #define XtCnoValues     "NoValues"
 #define XtNnoCharts     "noCharts"
 #define XtCnoCharts     "NoCharts"
+#define XtNnoInterface  "noInterface"
+#define XtCnoInterface  "NoInterface"
 #define XtNinterface    "interface"
 #define XtCinterface    "Interface"
 #define XtNipAcct       "ipAcct"
@@ -115,6 +120,7 @@
 typedef struct {
   Boolean no_charts;
   Boolean no_values;
+  Boolean no_interface;
   Boolean try_ip_acct;
   char *iface;
   int update;
@@ -144,6 +150,15 @@ static XtResource resources[] =
       XtRBoolean,
       sizeof(Boolean),
       XtOffsetOf(appdata_t, no_charts),
+      XtRBoolean,
+      (XtPointer) False
+    },
+    {
+      XtNnoInterface,
+      XtCnoInterface,
+      XtRBoolean,
+      sizeof(Boolean),
+      XtOffsetOf(appdata_t, no_interface),
       XtRBoolean,
       (XtPointer) False
     },
@@ -190,6 +205,8 @@ static XrmOptionDescRec options[] =
 {
   {"-if", "*interface", XrmoptionSepArg, NULL},
   {"-interface", "*interface", XrmoptionSepArg, NULL},
+  {"-ni", "*noInterface", XrmoptionNoArg, "True"},
+  {"-nointerface", "*noInterface", XrmoptionNoArg, "True"},
   {"-nc", "*noCharts", XrmoptionNoArg, "True"},
   {"-nocharts", "*noCharts", XrmoptionNoArg, "True"},
   {"-nv", "*noValues", XrmoptionNoArg, "True"},
@@ -313,14 +330,16 @@ int main(int argc, char *argv[])
                                   toplevel,	/* parent */
                                   XtNinternalBorderWidth, 0,
                                   NULL);	/* end varargs list */
-  /* create label widget */
-  interface = XtVaCreateManagedWidget("interface",	/* name */
-                                      labelWidgetClass,	/* class name */
-                                      paned,	/* parent */
-                                      XtNjustify, XtJustifyLeft,
-                                      XtNborderWidth, 0,
-                                      XtNshowGrip, False,
-                                      NULL);	/* end varargs list */
+  /* create label widget, if configured */
+  if (appdata.no_interface == False) {
+    interface = XtVaCreateManagedWidget("interface",	/* name */
+                                        labelWidgetClass,	/* class name */
+                                        paned,	/* parent */
+                                        XtNjustify, XtJustifyLeft,
+                                        XtNborderWidth, 0,
+                                        XtNshowGrip, False,
+                                        NULL);	/* end varargs list */
+  }  
   /* create label widget, if configured */
   if (appdata.no_values == False) {
     in = XtVaCreateManagedWidget("in ",	/* name */
@@ -445,9 +464,11 @@ void refresh(XtPointer data, XtIntervalId * id)
   sec %= 60;			/* calculate remaining seconds */
   hr = min / 60;
   min %= 60;
-  /* print the data to strings and set label resources */
-  sprintf(buf, dev_str, appdata.iface, hr, min, sec);
-  XtVaSetValues(interface, XtNlabel, buf, NULL);
+  if (appdata.no_interface == False) {
+    /* print the data to strings and set label resources */
+    sprintf(buf, dev_str, appdata.iface, hr, min, sec);
+    XtVaSetValues(interface, XtNlabel, buf, NULL);
+  }
   if (appdata.no_values == False) {
     sprintf(buf, in_str, average.in, max.in);
     XtVaSetValues(in, XtNlabel, buf, NULL);
