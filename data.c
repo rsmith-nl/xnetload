@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.10 2001/04/21 07:33:03 rsmith Exp rsmith $
+/* $Id: data.c,v 1.11 2001/06/02 10:45:48 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,10 @@
  * 
  * ------------------------------------------------------------------------
  * $Log: data.c,v $
+ * Revision 1.11  2001/06/02 10:45:48  rsmith
+ * Added 'debug' macro. Added dynamic memory allocation for read
+ * buffer. Removed old commented-out code.
+ *
  * Revision 1.10  2001/04/21 07:33:03  rsmith
  * Forgotten credits:
  * Zeroonreset patch by William Burrow <aa126@fan.nb.ca>
@@ -260,7 +264,6 @@ void update_avg(int seconds, int zeroOnReset )
       total.in = 0;
       max.in   = 0;
     }
-    printf("xnetload warning: incoming counter overrun.\n");
   } else {
     diff.in = current.in - last.in;
   }
@@ -270,7 +273,6 @@ void update_avg(int seconds, int zeroOnReset )
       total.out = 0;
       max.out   = 0;
     }
-    printf("xnetload warning: outgoing counter overrun.\n");
   } else {
     diff.out = current.out - last.out;
   }
