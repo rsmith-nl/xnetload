@@ -1,4 +1,4 @@
-/* $Id: x11-ui.c,v 1.2 1999/10/06 20:42:53 rsmith Exp rsmith $
+/* $Id: x11-ui.c,v 1.3 1999/10/06 20:55:38 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,9 @@
  * 
  * --------------------------------------------------------------------
  * $Log: x11-ui.c,v $
+ * Revision 1.3  1999/10/06 20:55:38  rsmith
+ * Updated online help for -ni option.
+ *
  * Revision 1.2  1999/10/06 20:42:53  rsmith
  * Added -ni option.
  *
@@ -98,7 +101,7 @@
 #include <time.h>
 #include <string.h>
 #include <unistd.h>
-#include <math.h>
+/*#include <math.h>*/
 
 /* User include files */
 #include "data.h"
@@ -112,19 +115,19 @@
 #define XtCnoInterface  "NoInterface"
 #define XtNinterface    "interface"
 #define XtCinterface    "Interface"
-#define XtNipAcct       "ipAcct"
-#define XtCipAcct       "IpAcct"
 #define XtNupd          "upd"
 #define XtCupd          "Upd"
 #define XtNavg          "avg"
 #define XtCavg          "Avg"
+#define XtNkilobytes    "kilobytes"
+#define XtCkilobytes    "Kilobytes"
 
 /* application resource data type */
 typedef struct {
   Boolean no_charts;
   Boolean no_values;
   Boolean no_interface;
-  Boolean try_ip_acct;
+  Boolean kilobytes;
   char *iface;
   int update;
   int avg;
@@ -132,8 +135,18 @@ typedef struct {
 
 /* static variables */
 static appdata_t appdata;
-static char *in_str = "in:  %5.1f p/s  max: %5.1f p/s";
-static char *out_str = "out: %5.1f p/s  max: %5.1f p/s";
+static char *in_alt[3] = {
+  "in:  %5.1f B/s  max: %5.1f B/s",
+  "in:  %6.3f kB/s  max: %6.3f kB/s",
+  "in:  %5.1f p/s  max: %5.1f p/s"
+};
+static char *in_str = 0;
+static char *out_alt[3] = {
+  "out:  %5.1f B/s  max: %5.1f B/s",
+  "out:  %6.3f kB/s  max: %6.3f kB/s",
+  "out:  %5.1f p/s  max: %5.1f p/s"
+};
+static char *out_str = 0;
 
 /* application resource list */
 static XtResource resources[] =
@@ -175,15 +188,6 @@ static XtResource resources[] =
       (XtPointer) 0
     },
     {
-      XtNipAcct,
-      XtCipAcct,
-      XtRBoolean,
-      sizeof(Boolean),
-      XtOffsetOf(appdata_t, try_ip_acct),
-      XtRBoolean,
-      (XtPointer) False
-    },
-    {
       XtNupd,
       XtCupd,
       XtRInt,
@@ -200,6 +204,15 @@ static XtResource resources[] =
       XtOffsetOf(appdata_t, avg),
       XtRImmediate,
       (XtPointer) 5
+    },
+    {
+      XtNkilobytes,
+      XtCkilobytes,
+      XtRBoolean,
+      sizeof(Boolean),
+      XtOffsetOf(appdata_t, kilobytes),
+      XtRBoolean,
+      (XtPointer) False
     }
 };
 
@@ -214,12 +227,12 @@ static XrmOptionDescRec options[] =
   {"-nocharts", "*noCharts", XrmoptionNoArg, "True"},
   {"-nv", "*noValues", XrmoptionNoArg, "True"},
   {"-novalues", "*noValues", XrmoptionNoArg, "True"},
-  {"-ip", "*ipAcct", XrmoptionNoArg, "True"},
-  {"-ipacct", "*ipAcct", XrmoptionNoArg, "True"},
   {"-u", "*upd", XrmoptionSepArg, NULL},
   {"-update", "*upd", XrmoptionSepArg, NULL},
-  {"-a", "*avg",  XrmoptionSepArg, NULL},
-  {"-average", "*avg",  XrmoptionSepArg, NULL}
+  {"-a", "*avg", XrmoptionSepArg, NULL},
+  {"-average", "*avg", XrmoptionSepArg, NULL},
+  {"-kb", "*kilobytes", XrmoptionNoArg, "True"},
+  {"-kilobytes", "*kilobytes", XrmoptionNoArg, "True"}
 };
 
 /* time at which the program was started  */
@@ -317,14 +330,13 @@ int main(int argc, char *argv[])
   }
 
   /* Initialize the data gathering process. */
-  initialize(appdata.iface, appdata.avg, appdata.try_ip_acct);
-  if (type == BYTES_TYPE) {
-    in_str = "inb:  %5.1f B/s  maxb: %5.1f B/s";
-    out_str = "outb: %5.1f B/s  maxb: %5.1f B/s";
-  } else {
-    in_str = "in:  %5.2f p/s  max: %5.2f p/s";
-    out_str = "out: %5.2f p/s  max: %5.2f p/s";
-  }
+  initialize(appdata.iface, appdata.avg, appdata.kilobytes);
+/*  if (type == BYTES_TYPE && appdata.kilobytes == True) {
+    type = KBYTES_TYPE;
+  }*/
+  in_str = in_alt[type];
+  out_str = out_alt[type];
+
   /* Get the starting time. */
   time(&starttime);
   /* Create paned widget. */
@@ -406,7 +418,7 @@ void print_help()
   fprintf(stderr, "Usage: xnetload [Xt args] [options] [interface]\n");
   fprintf(stderr,
           "xnetload understands all Xt standard command-line options.\n");
-  fprintf(stderr, "See X(1) for details.\n");
+  fprintf(stderr, "See X(1) for details. ");
   fprintf(stderr, "Additional options are as follows:\n\n");
   fprintf(stderr, "option name       option value\n");
   fprintf(stderr, "-----------       ------------\n");
@@ -415,7 +427,7 @@ void print_help()
   fprintf(stderr, "-nc, -nocharts    Don't use charts.\n");
   fprintf(stderr, "-nv, -novalues    Don't display packets/s counts.\n");
   fprintf(stderr, "-ni, -nointerface Don't display `interface' line.\n");
-  fprintf(stderr, "-ip, -ipacct      Read data from /proc/net/ip_acct.\n");
+  fprintf(stderr, "-kb, -kilobytes   Display count in kilobytes.\n");
   fprintf(stderr, "-u,  -update      Number of seconds between screen.\n");
   fprintf(stderr, "                  updates. (default is 1).\n");
   fprintf(stderr, "-a,  -average     Number of samples to average.\n");
@@ -425,31 +437,22 @@ void print_help()
           "The network interface to monitor can also be named on the\n");
   fprintf(stderr,
           "command-line without `-if' preceeding it, for compatiblity \n");
-  fprintf(stderr, "with previous versions.\n");
+  fprintf(stderr, "with previous versions. ");
   fprintf(stderr,
           "However, the value of the `-if' option has precedence.\n");
   fprintf(stderr, "\n");
 }
 
-/* Set the value that the StripChart widget str_in should display.
- * The graph now shows the log10 of the packets/bytes count. */
+/* Set the value that the StripChart widget str_in should display. */
 void get_in_value(Widget w, XtPointer client_data, XtPointer value)
 {
-  if (average.in < 1.0)
-    *(double *) value = 0.0;
-  else
-    *(double *) value = log10(average.in);
+  *(double *) value = (double)average.in;
 }
 
-/* Set the value that the StripChart widget str_out should display.
- * The graph now shows the log10 of the packets/bytes count. */
+/* Set the value that the StripChart widget str_out should display. */
 void get_out_value(Widget w, XtPointer client_data, XtPointer value)
 {
-  if (average.out < 1.0) {
-    *(double *) value = 0.0;
-  } else {
-    *(double *) value = log10(average.out);
-  }
+  *(double *) value = (double)average.out;
 }
 
 void refresh(XtPointer data, XtIntervalId * id)
@@ -458,12 +461,17 @@ void refresh(XtPointer data, XtIntervalId * id)
   time_t newtime;
   char *dev_str = "interface: %s  up: %2i:%02i:%02i";
   char buf[128];
-  /* read data from /proc/net/dev or proc/dev/ip_acct */
+  /* read data from /proc/net/dev */
   update_avg(appdata.update);
   /* get new time */
   time(&newtime);
   /* calculate the number of seconds passed since start */
   sec = newtime - starttime;
+  if (sec < 0) {
+    /* the clock has been reset! */
+    starttime = newtime;
+    sec = 0;
+  }
   min = sec / 60;		/* calculate minutes  */
   sec %= 60;			/* calculate remaining seconds */
   hr = min / 60;
@@ -479,6 +487,7 @@ void refresh(XtPointer data, XtIntervalId * id)
     sprintf(buf, out_str, average.out, max.out);
     XtVaSetValues(out, XtNlabel, buf, NULL);
   }
+  
   /* register the timer again */
   XtAppAddTimeOut(app_context, 1000*appdata.update, refresh, NULL);
 }
