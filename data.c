@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.7 2000/04/14 19:34:04 rsmith Exp rsmith $
+/* $Id: data.c,v 1.8 2000/04/14 20:22:50 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,9 @@
  * 
  * ------------------------------------------------------------------------
  * $Log: data.c,v $
+ * Revision 1.8  2000/04/14 20:22:50  rsmith
+ * Updated the copyright notice for 2000.
+ *
  * Revision 1.7  2000/04/14 19:34:04  rsmith
  * Fixed overflow diff count bug pointed out by Adrian Bridgett
  *
@@ -73,13 +76,15 @@
  *
  */
 
-#include <syslog.h>		/* for error reporting */
+#include <assert.h>
+#include <ctype.h>
+#include <limits.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <syslog.h>		/* for error reporting */
 #include <unistd.h>
-#include <limits.h>
-#include <math.h>
 #include "data.h"
 
 /* size of buffer to copy /proc/net/xxx to */
@@ -109,6 +114,11 @@ static int numavg;         /* number of samples to average */
 #define READ_BYTES         1	/* Function reads byte counts */
 #define READ_PACKETS       2	/* Function reads packet counts */
 
+/* Find the needle in the haystack. The needle must be preceded by
+ * whitespace and folowed by a semicolon. Returns a pointer to a location
+ * behind the needle. */
+static char *afterstr(char *haystack, const char *needle);
+
 /* Read the byte or packet count for the network interface  
    named in `iface' from /proc/net/dev, store it in the  
    variable pointed to by `pcnt', if `pcnt' is not NULL. */
@@ -118,6 +128,7 @@ static int read_dev(count_t * pcnt, char *iface);
 
 void report_error(char *msg)
 {
+  assert (msg!=0);
   /* cleanup for ip_acct */
   cleanup();
   /* Open connection to system logfile. */
@@ -135,6 +146,9 @@ void report_error(char *msg)
 int initialize(char *iface, int num_avg/*  , int kb */)
 {
   int r;
+
+  assert (iface!=0);
+  assert (num_avg > 0);
   
   /* Initialize global variables. */
   iface_name = iface;
@@ -184,16 +198,18 @@ int cleanup(void)
   return (0);
 }
 
-void update_avg(int seconds)
+void update_avg(int seconds, int zeroOnReset )
 {
   count_t current = {0.0,0.0};
   count_t diff;
   int i;
   static int index;
 
+  assert (seconds > 0);
+
   /* Quit if invalid number of seconds is given */
-  if (seconds <= 0)
-    return;
+/*    if (seconds <= 0) */
+/*      return; */
   /* Read the data. */
   i = read_dev(&current, iface_name);
   switch (i) {
@@ -211,13 +227,21 @@ void update_avg(int seconds)
   /* Try to detect counter overrun. current and last are floating point
    * values, but current is filled from a %u, and so capped to UINT_MAX */
   if (current.in < last.in) {
-    diff.in = current.in + (UINT_MAX - last.in);
+    if ( zeroOnReset ) {
+      diff.in  = 0;
+      total.in = 0;
+      max.in   = 0;
+    }
     printf("xnetload warning: incoming counter overrun.\n");
   } else {
     diff.in = current.in - last.in;
   }
   if (current.out < last.out) {
-    diff.out = current.out + (UINT_MAX - last.out);
+    if ( zeroOnReset ) {
+      diff.out  = 0;
+      total.out = 0;
+      max.out   = 0;
+    }
     printf("xnetload warning: outgoing counter overrun.\n");
   } else {
     diff.out = current.out - last.out;
@@ -256,14 +280,45 @@ void update_avg(int seconds)
   memcpy(&last, &current, sizeof(count_t));
 }
 
-int read_dev(count_t * pcnt, char *iface)
+char *afterstr(char *haystack, const char *needle)
+{
+  char *pch;
+  char *ptr = haystack;
+
+  assert (haystack != 0);
+  assert (needle != 0);
+
+  do {
+    pch = strstr (ptr, needle);
+    if (pch) {
+      /* Check for leading whitespace, if not begin of */
+      if (pch != haystack && isspace((int)(*(pch-1))) == 0) {
+          continue;
+      }
+      /* Check for closing ':' */
+      pch += strlen (needle);
+      if (*pch == ':') {
+        pch++;
+        break; /* Found it; break out of the loop. */
+      }
+      /* Set new start of buffer if not found. */
+      ptr = pch;
+    }
+  } while (pch);
+  return pch;
+}
+
+int read_dev(count_t *pcnt, char *iface)
 {
   FILE *f;
   char buf[BUFSIZE];
   int num, retval;
   char *pch;
   unsigned long int values[16];
-  
+
+  assert (pcnt != 0);
+  assert (iface != 0);
+
   /* Try to open /proc/net/dev for reading. */
   f = fopen("/proc/net/dev", "r");
   if (f == 0) {
@@ -283,15 +338,16 @@ int read_dev(count_t * pcnt, char *iface)
   fclose(f);
 
   /* Seek the interface we're looking for. */
-  pch = strstr(buf, iface);
+/*    pch = strstr(buf, iface); */
+  pch = afterstr(buf, iface);
   if (pch == 0) {
     /* Interface not found. */
     return READ_IFACE_ERR;
   }
   /* Skip the interface name. */
-  pch += strlen(iface);
+/*    pch += strlen(iface); */
   /* Skip the ":" after the interface name. */
-  pch++;
+/*    pch++; */
 
   /* There are different layouts for /proc/net/dev:
    * there are several fields for received and transmitted bytes
