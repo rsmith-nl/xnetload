@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.3 1999/12/27 22:16:23 rsmith Exp rsmith $
+/* $Id: data.c,v 1.4 2000/01/01 21:26:05 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,9 @@
  * 
  * ------------------------------------------------------------------------
  * $Log: data.c,v $
+ * Revision 1.4  2000/01/01 21:26:05  rsmith
+ * Release 1.7.1b3
+ *
  * Revision 1.3  1999/12/27 22:16:23  rsmith
  * Pulled out ip-acct & fixed bugs for release 1.7.0b1
  *
@@ -76,6 +79,7 @@
 int type = 0;			/* What kind of data is gathered */
 count_t average = {(float)0,(float)0};   /* average count */
 count_t max = {(float)0,(float)0};       /* maximum count */
+count_t total = {(float)0,(float)0};     /* total count   */
 
 /********** Static variables **********/
 static char *iface_name;   /* Name of the interface to be queried. */
@@ -127,6 +131,8 @@ int initialize(char *iface, int num_avg/*  , int kb */)
   numavg = num_avg;
   average.in = (float)0;
   average.out = (float)0;
+  total.in  = (float)0;
+  total.out = (float)0;
 
   inarray = (float*)malloc(numavg*sizeof(float));
   outarray = (float*)malloc(numavg*sizeof(float));
@@ -212,6 +218,10 @@ void update_avg(int seconds)
   if (index == numavg) {
     index = 0;
   }
+
+  /* Add to the total */
+  total.in  += current.in;
+  total.out += current.out;
 
   /* Calculate the average */
   average.in = average.out = (float)0;
