@@ -1,4 +1,4 @@
-/*  $Id: data.h,v 1.2 1999/12/27 18:54:22 rsmith Exp rsmith $
+/*  $Id: data.h,v 1.3 1999/12/27 22:16:45 rsmith Exp rsmith $
  * --------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,9 @@
  * 
  * --------------------------------------------------------------------
  * $Log: data.h,v $
+ * Revision 1.3  1999/12/27 22:16:45  rsmith
+ * Fixed bugs for release 1.7.0b1
+ *
  * Revision 1.2  1999/12/27 18:54:22  rsmith
  * Remove references to `where' (for 1.7.0 release).
  *
@@ -58,12 +61,11 @@ typedef struct {
 } count_t;
 
 /********** Global variables **********/
-extern count_t average;    /* average count */
-extern count_t max;        /* maximum count */
+extern count_t average;   /* average count */
+extern count_t max;       /* maximum count */
 /* Values for `type' */
 #define BYTES_TYPE      0
-#define KBYTES_TYPE     1
-#define PACKETS_TYPE    2
+#define PACKETS_TYPE    1
 extern int type;           /* What kind of data is gathered */
 
 /********** Functions **********/
@@ -73,7 +75,7 @@ extern void report_error(char *msg);
 
 /* Initialize the data gathering process. Sets the variables `type' and
    `where', for future reference. Returns `type' */
-extern int initialize(char *iface, int num_avg, int kb);
+extern int initialize(char *iface, int num_avg/*  , int kb */);
 extern int cleanup(void);
 
 /* Read the new counts and update the `average' and `max'. */

@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.2 1999/06/09 18:40:29 rsmith Exp rsmith $
+/* $Id: data.c,v 1.3 1999/12/27 22:16:23 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,9 @@
  * 
  * ------------------------------------------------------------------------
  * $Log: data.c,v $
+ * Revision 1.3  1999/12/27 22:16:23  rsmith
+ * Pulled out ip-acct & fixed bugs for release 1.7.0b1
+ *
  * Revision 1.2  1999/06/09 18:40:29  rsmith
  * Enlarged the file buffer for /proc/net/xxx to 2048 bytes.
  *
@@ -62,6 +65,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 #include <math.h>
 #include "data.h"
 
@@ -69,21 +73,20 @@
 #define BUFSIZE 2048
 
 /********** Global variables **********/
-count_t average = {(float)0,(float)0};		/* average count */
-count_t max = {(float)0,(float)0};			/* maximum count */
 int type = 0;			/* What kind of data is gathered */
+count_t average = {(float)0,(float)0};   /* average count */
+count_t max = {(float)0,(float)0};       /* maximum count */
 
 /********** Static variables **********/
-static char *iface_name;	      /* Name of the interface to be queried. */
+static char *iface_name;   /* Name of the interface to be queried. */
 static count_t last = {(float)0,(float)0};	/* Previously read values. */
-static float *inarray;    /* Array for receive counts. */
-static float *outarray;	/* Array for transmit counts. */
-static int numavg;               /* number of samples to average */
+static float *inarray;     /* Array for receive counts. */
+static float *outarray;	   /* Array for transmit counts. */
+static int numavg;         /* number of samples to average */
 
 /********** Function definitions **********/
 
 /* return values for read_*  */
-#define READ_VTYPE_ERR    -6	/* unknown accounting rule type */
 #define READ_ALLOC_ERR    -5	/* Not enough memory on the stack */
 #define READ_FOPEN_ERR    -4	/* Can't open file */
 #define READ_FREAD_ERR    -3	/* Can't read file */
@@ -115,7 +118,7 @@ void report_error(char *msg)
   exit(1);
 }
 
-int initialize(char *iface, int num_avg, int kb)
+int initialize(char *iface, int num_avg/*  , int kb */)
 {
   int r;
   
@@ -147,11 +150,7 @@ int initialize(char *iface, int num_avg, int kb)
     report_error("Error scanning /proc/net/dev");
     break;
   case READ_BYTES:
-    if (kb) {
-      type = KBYTES_TYPE;
-    } else {  
-      type = BYTES_TYPE;
-    }
+    type = BYTES_TYPE;
     break;
   case READ_PACKETS:
     type = PACKETS_TYPE;
@@ -159,32 +158,6 @@ int initialize(char *iface, int num_avg, int kb)
   default:
     report_error("Unknown return value from read_dev");
   }    
-  /* Do appropriate conversion */
-  switch (type) {
-  case BYTES_TYPE:
-  case PACKETS_TYPE:
-    if (last.in < 1.0) {
-      last.in = 0.0;
-    } else {
-      last.in = log10(last.in);
-    }
-    if (last.out < 1.0) {
-      last.out = 0.0;
-    } else {
-      last.out = log10(last.out);
-    }
-    break;
-  case KBYTES_TYPE:
-    last.in /= 1024;
-    last.out /= 1024;
-    break;
-  default:
-    last.in = (float)0;
-    last.out = (float)0;
-    /* do nothing */
-    break;
-  }
-
   return type;
 }  
 
@@ -207,39 +180,29 @@ void update_avg(int seconds)
     return;
   /* Read the data. */
   i = read_dev(&current, iface_name);
-  if (i < 0) {
-    if (i == READ_IFACE_ERR) {
-      /* Interface has disappeared from the file: we've gone offline. */
-      exit(1);
-    } else {
-      report_error("Terminating");
-    }
-  }
-  /* Do appropriate conversion */
-  switch (type) {
-  case BYTES_TYPE:
-  case PACKETS_TYPE:
-    if (current.in < 1.0) {
-      current.in = 0.0;
-    } else {
-      current.in = log10(current.in);
-    }
-    if (current.out < 1.0) {
-      current.out = 0.0;
-    } else {
-      current.out = log10(current.out);
-    }
+  switch (i) {
+  case READ_FOPEN_ERR:
+    report_error("Could not open /proc/net/dev");
     break;
-  case KBYTES_TYPE:
-    current.in /= 1024;
-    current.out /= 1024;
+  case READ_IFACE_ERR:
+    exit(0);
     break;
-  default:
-    current.in = (float)0;
-    current.out = (float)0;
-    /* do nothing */
+  case READ_SCAN_ERR:
+    report_error("Error scanning /proc/net/dev");
     break;
   }
+
+  /* Try to detect counter overrun. current and last are floating point
+   * values, but current is filled from a %u, and so capped to UINT_MAX */
+  if (current.in < last.in) {
+    current.in += (UINT_MAX - last.in);
+    printf("xnetload warning: incoming counter overrun.\n");
+  }
+  if (current.out < last.out) {
+    current.out += (UINT_MAX - last.out);
+    printf("xnetload warning: outgoing counter overrun.\n");
+  }
+
   /* Calculate the difference with the last call */
   diff.in = (current.in - last.in)/seconds;
   diff.out = (current.out - last.out)/seconds;
@@ -264,6 +227,7 @@ void update_avg(int seconds)
     max.in = average.in;
   if (average.out > max.out)
     max.out = average.out;
+
   /* Store current count for further reference. */
   memcpy(&last, &current, sizeof(count_t));
 }
@@ -274,7 +238,7 @@ int read_dev(count_t * pcnt, char *iface)
   char buf[BUFSIZE];
   int num, retval;
   char *pch;
-  unsigned int values[16];
+  unsigned long int values[16];
   
   /* Try to open /proc/net/dev for reading. */
   f = fopen("/proc/net/dev", "r");
@@ -327,7 +291,8 @@ int read_dev(count_t * pcnt, char *iface)
    *                        15 carrier         13 carrier
    *                        16 compressed      14 multicast
    */
-  num = sscanf(pch, "%u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u",
+  num = sscanf(pch, 
+           "%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
                &values[0], &values[1], &values[2], &values[3],
                &values[4], &values[5], &values[6], &values[7],
                &values[8], &values[9], &values[10], &values[11],

@@ -1,4 +1,4 @@
-/* $Id: x11-ui.c,v 1.3 1999/10/06 20:55:38 rsmith Exp rsmith $
+/* $Id: x11-ui.c,v 1.4 1999/12/27 22:17:45 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,10 @@
  * 
  * --------------------------------------------------------------------
  * $Log: x11-ui.c,v $
+ * Revision 1.4  1999/12/27 22:17:45  rsmith
+ * Added -kb switch and all that goes with that.
+ * Pulled out ip-acct & fixed bugs for release 1.7.0b1
+ *
  * Revision 1.3  1999/10/06 20:55:38  rsmith
  * Updated online help for -ni option.
  *
@@ -101,7 +105,7 @@
 #include <time.h>
 #include <string.h>
 #include <unistd.h>
-/*#include <math.h>*/
+#include <math.h>
 
 /* User include files */
 #include "data.h"
@@ -136,13 +140,11 @@ typedef struct {
 /* static variables */
 static appdata_t appdata;
 static char *in_alt[3] = {
-  "in:  %5.1f B/s  max: %5.1f B/s",
   "in:  %6.3f kB/s  max: %6.3f kB/s",
   "in:  %5.1f p/s  max: %5.1f p/s"
 };
 static char *in_str = 0;
 static char *out_alt[3] = {
-  "out:  %5.1f B/s  max: %5.1f B/s",
   "out:  %6.3f kB/s  max: %6.3f kB/s",
   "out:  %5.1f p/s  max: %5.1f p/s"
 };
@@ -330,10 +332,7 @@ int main(int argc, char *argv[])
   }
 
   /* Initialize the data gathering process. */
-  initialize(appdata.iface, appdata.avg, appdata.kilobytes);
-/*  if (type == BYTES_TYPE && appdata.kilobytes == True) {
-    type = KBYTES_TYPE;
-  }*/
+  initialize(appdata.iface, appdata.avg);
   in_str = in_alt[type];
   out_str = out_alt[type];
 
@@ -446,13 +445,31 @@ void print_help()
 /* Set the value that the StripChart widget str_in should display. */
 void get_in_value(Widget w, XtPointer client_data, XtPointer value)
 {
-  *(double *) value = (double)average.in;
+  if (appdata.kilobytes) {
+    *(double *)value = (double)average.in/1024;
+  } else {
+    if (average.in < 1.0) {
+      *(double *)value = (double)0;
+    } else {
+      *(double *)value = log10(average.in);
+    }
+  }
 }
 
 /* Set the value that the StripChart widget str_out should display. */
 void get_out_value(Widget w, XtPointer client_data, XtPointer value)
 {
-  *(double *) value = (double)average.out;
+  if (appdata.kilobytes) {
+    *(double *)value = (double)average.out/1024;
+  } else {
+    if (average.in < 1.0) {
+      *(double *)value = (double)0;
+    } else {
+      *(double *)value = log10(average.out);
+    }
+  }
+
+/*    *(double *) value = (double)avg_c.out; */
 }
 
 void refresh(XtPointer data, XtIntervalId * id)
@@ -482,9 +499,15 @@ void refresh(XtPointer data, XtIntervalId * id)
     XtVaSetValues(interface, XtNlabel, buf, NULL);
   }
   if (appdata.no_values == False) {
-    sprintf(buf, in_str, average.in, max.in);
+    if (type == BYTES_TYPE)
+      sprintf(buf, in_str, average.in/1024, max.in/1024);
+    else
+      sprintf(buf, in_str, average.in, max.in);
     XtVaSetValues(in, XtNlabel, buf, NULL);
-    sprintf(buf, out_str, average.out, max.out);
+    if (type == BYTES_TYPE)
+      sprintf(buf, out_str, average.out/1024, max.out/1024);
+    else
+      sprintf(buf, out_str, average.out, max.out);
     XtVaSetValues(out, XtNlabel, buf, NULL);
   }
   
