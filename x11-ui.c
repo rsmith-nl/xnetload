@@ -1,4 +1,4 @@
-/* $Id: x11-ui.c,v 1.4 1999/12/27 22:17:45 rsmith Exp rsmith $
+/* $Id: x11-ui.c,v 1.5 2000/01/01 21:24:56 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,9 @@
  * 
  * --------------------------------------------------------------------
  * $Log: x11-ui.c,v $
+ * Revision 1.5  2000/01/01 21:24:56  rsmith
+ * Release 1.7.1b3
+ *
  * Revision 1.4  1999/12/27 22:17:45  rsmith
  * Added -kb switch and all that goes with that.
  * Pulled out ip-acct & fixed bugs for release 1.7.0b1
@@ -125,6 +128,8 @@
 #define XtCavg          "Avg"
 #define XtNkilobytes    "kilobytes"
 #define XtCkilobytes    "Kilobytes"
+#define XtNscale        "scale"
+#define XtCscale        "Scale"
 
 /* application resource data type */
 typedef struct {
@@ -135,17 +140,18 @@ typedef struct {
   char *iface;
   int update;
   int avg;
+  int scale;
 } appdata_t;
 
 /* static variables */
 static appdata_t appdata;
 static char *in_alt[3] = {
-  "in:  %6.3f kB/s  max: %6.3f kB/s",
+  "in:  %6.3f kB/s  max: %6.3f kB/s  total: %.3f MB",
   "in:  %5.1f p/s  max: %5.1f p/s"
 };
 static char *in_str = 0;
 static char *out_alt[3] = {
-  "out:  %6.3f kB/s  max: %6.3f kB/s",
+  "out:  %6.3f kB/s  max: %6.3f kB/s  total: %.3f MB",
   "out:  %5.1f p/s  max: %5.1f p/s"
 };
 static char *out_str = 0;
@@ -199,6 +205,15 @@ static XtResource resources[] =
       (XtPointer) 1
     },      
     {
+      XtNscale,
+      XtCscale,
+      XtRInt,
+      sizeof(int),
+      XtOffsetOf(appdata_t, scale),
+      XtRImmediate,
+      (XtPointer) 1
+    },      
+    {
       XtNavg,
       XtCavg,
       XtRInt,
@@ -234,7 +249,9 @@ static XrmOptionDescRec options[] =
   {"-a", "*avg", XrmoptionSepArg, NULL},
   {"-average", "*avg", XrmoptionSepArg, NULL},
   {"-kb", "*kilobytes", XrmoptionNoArg, "True"},
-  {"-kilobytes", "*kilobytes", XrmoptionNoArg, "True"}
+  {"-kilobytes", "*kilobytes", XrmoptionNoArg, "True"},
+  {"-s", "*scale", XrmoptionSepArg, NULL},
+  {"-scale", "*scale", XrmoptionSepArg, NULL}
 };
 
 /* time at which the program was started  */
@@ -311,6 +328,7 @@ int main(int argc, char *argv[])
 #ifdef DEBUG
   printf("appdata.update %d\n", appdata.update);
   printf("appdata.avg %d\n", appdata.avg);
+  printf("appdata.scale %d\n", appdata.scale);
 #endif
   /* check if interface was given */
   if (appdata.iface == 0) {
@@ -323,12 +341,16 @@ int main(int argc, char *argv[])
       return 1;
     }
   }
+
   /* Check the command line arguments. */
   if (appdata.avg < 1) {
     report_error("Average count must be > 0");
   }
   if (appdata.update < 1) {
     report_error("Update time must be > 0");
+  }
+  if (appdata.scale < 1) {
+    report_error("Scale must be > 1");
   }
 
   /* Initialize the data gathering process. */
@@ -413,7 +435,7 @@ int main(int argc, char *argv[])
 
 void print_help()
 {
-  fprintf(stderr, "xnetload "VERSION", Copyright (C) 1997-1999 R.F. Smith\n");
+  fprintf(stderr, "xnetload "VERSION", Copyright (C) 1997-2000 R.F. Smith\n");
   fprintf(stderr, "Usage: xnetload [Xt args] [options] [interface]\n");
   fprintf(stderr,
           "xnetload understands all Xt standard command-line options.\n");
@@ -429,6 +451,7 @@ void print_help()
   fprintf(stderr, "-kb, -kilobytes   Display count in kilobytes.\n");
   fprintf(stderr, "-u,  -update      Number of seconds between screen.\n");
   fprintf(stderr, "                  updates. (default is 1).\n");
+  fprintf(stderr, "-s,  -scale       Number to scale kilobyte chart by.\n");
   fprintf(stderr, "-a,  -average     Number of samples to average.\n");
   fprintf(stderr, "                  (default is 5).\n\n");
   
@@ -446,7 +469,7 @@ void print_help()
 void get_in_value(Widget w, XtPointer client_data, XtPointer value)
 {
   if (appdata.kilobytes) {
-    *(double *)value = (double)average.in/1024;
+    *(double *)value = (double)average.in/(1024*appdata.scale);
   } else {
     if (average.in < 1.0) {
       *(double *)value = (double)0;
@@ -460,7 +483,7 @@ void get_in_value(Widget w, XtPointer client_data, XtPointer value)
 void get_out_value(Widget w, XtPointer client_data, XtPointer value)
 {
   if (appdata.kilobytes) {
-    *(double *)value = (double)average.out/1024;
+    *(double *)value = (double)average.out/(1024*appdata.scale);
   } else {
     if (average.in < 1.0) {
       *(double *)value = (double)0;
@@ -468,8 +491,6 @@ void get_out_value(Widget w, XtPointer client_data, XtPointer value)
       *(double *)value = log10(average.out);
     }
   }
-
-/*    *(double *) value = (double)avg_c.out; */
 }
 
 void refresh(XtPointer data, XtIntervalId * id)
@@ -500,12 +521,12 @@ void refresh(XtPointer data, XtIntervalId * id)
   }
   if (appdata.no_values == False) {
     if (type == BYTES_TYPE)
-      sprintf(buf, in_str, average.in/1024, max.in/1024);
+      sprintf(buf, in_str, average.in/1024, max.in/1024, total.in/(1024*1024));
     else
       sprintf(buf, in_str, average.in, max.in);
     XtVaSetValues(in, XtNlabel, buf, NULL);
     if (type == BYTES_TYPE)
-      sprintf(buf, out_str, average.out/1024, max.out/1024);
+      sprintf(buf, out_str, average.out/1024, max.out/1024, total.out/(1024*1024));
     else
       sprintf(buf, out_str, average.out, max.out);
     XtVaSetValues(out, XtNlabel, buf, NULL);
