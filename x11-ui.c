@@ -1,4 +1,4 @@
-/* $Id: x11-ui.c,v 1.1 1999/05/09 16:40:15 rsmith Exp $
+/* $Id: x11-ui.c,v 1.2 1999/10/06 20:42:53 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,9 @@
  * 
  * --------------------------------------------------------------------
  * $Log: x11-ui.c,v $
+ * Revision 1.2  1999/10/06 20:42:53  rsmith
+ * Added -ni option.
+ *
  * Revision 1.1  1999/05/09 16:40:15  rsmith
  * Initial revision
  *
@@ -411,6 +414,7 @@ void print_help()
   fprintf(stderr, "-interface <name> Any device from /proc/net/dev.\n");
   fprintf(stderr, "-nc, -nocharts    Don't use charts.\n");
   fprintf(stderr, "-nv, -novalues    Don't display packets/s counts.\n");
+  fprintf(stderr, "-ni, -nointerface Don't display `interface' line.\n");
   fprintf(stderr, "-ip, -ipacct      Read data from /proc/net/ip_acct.\n");
   fprintf(stderr, "-u,  -update      Number of seconds between screen.\n");
   fprintf(stderr, "                  updates. (default is 1).\n");
