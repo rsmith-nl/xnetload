@@ -1,6 +1,6 @@
 # Makefile for xnetload
 #
-# $Id: Makefile,v 1.3 1999/12/27 23:14:30 rsmith Exp rsmith $
+# $Id: Makefile,v 1.4 2000/04/14 20:21:34 rsmith Exp rsmith $
 #
 
 # Location to install the binary.
@@ -41,7 +41,7 @@ LIBS = -lXaw -lXmu -lXt -lX11 -lm
 BASENAME = xnetload
 VMAJOR   = 1
 VMINOR   = 8
-VPATCH   = 0
+VPATCH   = 1
 
 # Directory in which this library is built
 BUILDDIR = $(BASENAME)-$(VMAJOR).$(VMINOR)
