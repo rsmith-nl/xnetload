@@ -1,4 +1,4 @@
-/* $Id: x11-ui.c,v 1.9 2000/04/14 20:22:12 rsmith Exp rsmith $
+/* $Id: x11-ui.c,v 1.10 2000/06/07 16:49:04 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,10 @@
  * 
  * --------------------------------------------------------------------
  * $Log: x11-ui.c,v $
+ * Revision 1.10  2000/06/07 16:49:04  rsmith
+ * Fixed bug in get_out_value. Fix contributed by
+ * Jesper Dahlberg <jesper@swing.campus.luth.se>
+ *
  * Revision 1.9  2000/04/14 20:22:12  rsmith
  * Updated the copyright notice for 2000.
  *
@@ -164,15 +168,26 @@ typedef struct {
 /* static variables */
 static appdata_t appdata;
 static char *in_alt[2] = {
-  "in:  %.1f kB/s (%.1f kB/s) [%.1f MB]",
+  "in:  %.1f %sB/s (%.1f %sB/s) [%.1f %sB]",
   "in:  %.1f p/s  max: %.1f p/s"
 };
 static char *in_str = 0;
 static char *out_alt[2] = {
-  "out:  %.1f kB/s (%.1f kB/s) [%.1f MB]",
+  "out:  %.1f %sB/s (%.1f %sB/s) [%.1f %sB]",
   "out:  %1.1f p/s  max: %.1f p/s"
 };
 static char *out_str = 0;
+
+/*
+ * Definition of the prefixes.  A thousand exa bytes will be
+ * a sufficient upper limit for quite a few years.  ;-)
+ */
+static char *prefix[] = {"", "K", "M", "G", "T", "P", "E"};
+
+struct prefixed_value {
+  float value;
+  char *prefix;
+};
 
 /* application resource list */
 static XtResource resources[] =
@@ -332,6 +347,9 @@ get_in_value(Widget w, XtPointer client_data, XtPointer value);
 /* Get packets out value for str_out widget. Uses the global `average' */
 void
 get_out_value(Widget w, XtPointer client_data, XtPointer value);
+
+/* Determines appropriate prefix to use for 'value' */
+struct prefixed_value use_prefix(float value);
 
 /* Main procedure. Checks the arguments and aborts in case of error. 
  * Otherwise it creates and maps the widgets and goes into the message
@@ -529,6 +547,7 @@ void get_out_value(Widget w, XtPointer client_data, XtPointer value)
 void refresh(XtPointer data, XtIntervalId * id)
 {
   long hr, min, sec;		/* time vars  */
+  struct prefixed_value pval_average, pval_max, pval_total;
   time_t newtime;
   char *dev_str = "%s up: %i:%02i:%02i";
   char buf[128];
@@ -553,14 +572,26 @@ void refresh(XtPointer data, XtIntervalId * id)
     XtVaSetValues(interface, XtNlabel, buf, NULL);
   }
   if (appdata.no_values == False) {
-    if (type == BYTES_TYPE)
-      sprintf(buf, in_str, average.in/1024, max.in/1024, total.in/(1024*1024));
-    else
+    if (type == BYTES_TYPE) {
+      pval_average = use_prefix(average.in);
+      pval_max = use_prefix(max.in);
+      pval_total = use_prefix(total.in);
+      sprintf( buf, in_str
+             , pval_average.value, pval_average.prefix
+             , pval_max.value, pval_max.prefix
+             , pval_total.value, pval_total.prefix);
+    } else
       sprintf(buf, in_str, average.in, max.in);
     XtVaSetValues(in, XtNlabel, buf, NULL);
-    if (type == BYTES_TYPE)
-      sprintf(buf, out_str, average.out/1024, max.out/1024, total.out/(1024*1024));
-    else
+    if (type == BYTES_TYPE) {
+      pval_average = use_prefix(average.out);
+      pval_max = use_prefix(max.out);
+      pval_total = use_prefix(total.out);
+      sprintf( buf, out_str
+             , pval_average.value, pval_average.prefix
+             , pval_max.value, pval_max.prefix
+             , pval_total.value, pval_total.prefix);
+    } else
       sprintf(buf, out_str, average.out, max.out);
     XtVaSetValues(out, XtNlabel, buf, NULL);
   }
@@ -574,4 +605,18 @@ void xclose(Widget w, XEvent * event, String * params, Cardinal * num)
 {
   cleanup();
   exit(0);
+}
+
+struct prefixed_value use_prefix(float value)
+{
+  int i;
+  struct prefixed_value pval;
+
+  pval.value = value;
+  for (i = 0; pval.value > 1024.0; i++) {
+    pval.value /= 1024.0;
+  }
+  pval.prefix = prefix[i];
+
+  return pval;
 }
