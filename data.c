@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.5 2000/02/22 17:47:37 rsmith Exp rsmith $
+/* $Id: data.c,v 1.6 2000/02/22 18:09:25 rsmith Exp $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,9 @@
  * 
  * ------------------------------------------------------------------------
  * $Log: data.c,v $
+ * Revision 1.6  2000/02/22 18:09:25  rsmith
+ * Changed the calculation of the `total' count.
+ *
  * Revision 1.5  2000/02/22 17:47:37  rsmith
  * Implements the `total' count. Initial patch by
  * Paul Schilling <pfschill@bigfoot.com>, update by rsmith.
@@ -205,13 +208,13 @@ void update_avg(int seconds)
   /* Try to detect counter overrun. current and last are floating point
    * values, but current is filled from a %u, and so capped to UINT_MAX */
   if (current.in < last.in) {
-    diff.in = current.in + (UINT_MAX - last.in) - last.in;
+    diff.in = current.in + (UINT_MAX - last.in);
     printf("xnetload warning: incoming counter overrun.\n");
   } else {
     diff.in = current.in - last.in;
   }
   if (current.out < last.out) {
-    diff.out = current.out + (UINT_MAX - last.out) - last.out;
+    diff.out = current.out + (UINT_MAX - last.out);
     printf("xnetload warning: outgoing counter overrun.\n");
   } else {
     diff.out = current.out - last.out;
