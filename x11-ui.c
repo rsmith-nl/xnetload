@@ -1,4 +1,4 @@
-/* $Id: x11-ui.c,v 1.5 2000/01/01 21:24:56 rsmith Exp rsmith $
+/* $Id: x11-ui.c,v 1.6 2000/02/22 17:49:53 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,10 @@
  * 
  * --------------------------------------------------------------------
  * $Log: x11-ui.c,v $
+ * Revision 1.6  2000/02/22 17:49:53  rsmith
+ * Implements scaling and totals feature. Initial patch by
+ * Paul Schilling <pfschill@bigfoot.com>, some changes by rsmith.
+ *
  * Revision 1.5  2000/01/01 21:24:56  rsmith
  * Release 1.7.1b3
  *
@@ -265,8 +269,8 @@ static Widget toplevel, paned, interface, in, out, str_in, str_out;
 static String fallback_resources[] =
 {
   "*Label*background: LightGray",
-  "*Label*width: 260",
-  "*StripChart*width: 260",
+  "*Label*width: 380",
+  "*StripChart*width: 380",
   "*StripChart*height: 30",
   NULL
 };
