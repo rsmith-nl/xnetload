@@ -1,6 +1,6 @@
-$Id: README,v 1.6 2001/04/21 07:36:50 rsmith Exp rsmith $
+$Id$
 
-This is the README file for xnetload 1.11.0 for Linux.
+This is the README file for xnetload 1.11.2 for Linux.
 
 Purpose
 -------
@@ -14,7 +14,7 @@ New versions of this program are allways available first on the homepage:
 http://www.xs4all.nl/~rsmith/software/
 
 On this web-page you'll also find an md5sum of the source package.  Run
-`md5sum xnetload-1.11.0.tar.gz' and compare the output with the number found
+`md5sum xnetload-1.11.2.tar.gz' and compare the output with the number found
 on the web-page. If the numbers differ, the source package was either
 mauled during download (use binary download if you're ftp-ing) or altered.
 
@@ -23,6 +23,7 @@ Files
 The distribution should contain the following files:
 COPYING         GNU General Public License.
 Makefile        Makefile for GNU make.
+Makefile.static Makefile for a statically linked executable.
 README          :-)
 CHANGELOG       Changes between different versions.
 XNetload        Application defaults file for xnetload.
@@ -34,10 +35,10 @@ x11-ui.c        Xt/Xaw user interface code.
 
 Building and installing the program
 ----------------------------------
-- To build the program invoke 'make'. The default is to build a debugging
-  binary. You can do a 'strip xnetload' before 'make install' or you can
-  uncomment the second set of CFLAGS and LFLAGS for a optimized and
-  stripped binary. 
+- If you want a statically linked binary, copy Makefile.static to Makefile.
+- To build the program invoke 'make'. The default is to build a optimized
+  binary. You can uncomment the first set of CFLAGS and LFLAGS (and comment
+  out the second set) for a debugging binary. 
 - To install the program, invoke 'make install' *as root*.
 - Optionally, edit the application-defaults file (XNetload), and copy it
   (as root) to a place where X can find it. Usually a "app-defaults" 
