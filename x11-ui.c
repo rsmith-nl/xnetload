@@ -1,4 +1,4 @@
-/* $Id: x11-ui.c,v 1.15 2001/06/26 13:35:57 rsmith Exp rsmith $
+/* $Id: x11-ui.c,v 1.16 2001/07/13 18:06:11 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,9 @@
  * 
  * --------------------------------------------------------------------
  * $Log: x11-ui.c,v $
+ * Revision 1.16  2001/07/13 18:06:11  rsmith
+ * #included stdlib.h for exit(3).
+ *
  * Revision 1.15  2001/06/26 13:35:57  rsmith
  * Reformatted and enhanced the online help message.
  *
@@ -170,30 +173,46 @@
 #define XtNzeroOnReset	"zeroOnReset"
 #define XtCzeroOnReset	"ZeroOnReset"
 
-/* application resource data type */
-typedef struct {
-  Boolean no_charts;
-  Boolean no_values;
-  Boolean no_interface;
-  Boolean kilobytes;
-  Boolean zeroonreset;
-  Boolean help;
-  char *iface;
-  int update;
-  int avg;
-  int scale;
-} appdata_t;
+
+/**
+ * struct _appdata - contains the arguments given to the program
+ * @no_charts: true if no chart widgets should be shown
+ * @no_values: true if no value widgets should be shown
+ * @no_interface: true if the name of the interface should not be shown
+ * @kilobytes: true if the display should be in kilobytes instead of log10
+ * @zeroonreset: should the counter be reset if the interface goes down
+ * @help: show online help instead of running the program
+ * @iface: any device from /proc/net/dev to monitor
+ * @update: number of seconds between screen updates
+ * @avg: number of samples to average before displaying them
+ * @scale: number to scale kilobyte chart by
+ * 
+ * Contains the options given to the program, or the built-in defaults if
+ * an option is not set.
+ **/
+struct _appdata {
+	Boolean no_charts;
+	Boolean no_values;
+	Boolean no_interface;
+	Boolean kilobytes;
+	Boolean zeroonreset;
+	Boolean help;
+	char *iface;
+	int update;
+	int avg;
+	int scale;
+};
 
 /* static variables */
-static appdata_t appdata;
+static struct _appdata appdata;
 static char *in_alt[2] = {
-  "in:  %.1f %sB/s (%.1f %sB/s) [%.1f %sB]",
-  "in:  %.1f p/s  max: %.1f p/s"
+	"in:  %.1f %sB/s (%.1f %sB/s) [%.1f %sB]",
+	"in:  %.1f p/s  max: %.1f p/s"
 };
 static char *in_str = 0;
 static char *out_alt[2] = {
-  "out:  %.1f %sB/s (%.1f %sB/s) [%.1f %sB]",
-  "out:  %1.1f p/s  max: %.1f p/s"
+	"out:  %.1f %sB/s (%.1f %sB/s) [%.1f %sB]",
+	"out:  %1.1f p/s  max: %.1f p/s"
 };
 static char *out_str = 0;
 
@@ -201,132 +220,120 @@ static char *out_str = 0;
  * Definition of the prefixes.  A thousand exa bytes will be
  * a sufficient upper limit for quite a few years.  ;-)
  */
-static char *prefix[] = {"", "k", "M", "G", "T", "P", "E"};
+static char *prefix[] = { "", "k", "M", "G", "T", "P", "E" };
 
 struct prefixed_value {
-  float value;
-  char *prefix;
+	float value;
+	char *prefix;
 };
 
 /* application resource list */
-static XtResource resources[] =
-{
-    {
-      XtNhelp,
-      XtChelp,
-      XtRBoolean,
-      sizeof(Boolean),
-      XtOffsetOf(appdata_t, help),
-      XtRBoolean,
-      (XtPointer) False
-    },
-    {
-      XtNnoValues,
-      XtCnoValues,
-      XtRBoolean,
-      sizeof(Boolean),
-      XtOffsetOf(appdata_t, no_values),
-      XtRBoolean,
-      (XtPointer) False
-    },
-    {
-      XtNnoCharts,
-      XtCnoCharts,
-      XtRBoolean,
-      sizeof(Boolean),
-      XtOffsetOf(appdata_t, no_charts),
-      XtRBoolean,
-      (XtPointer) False
-    },
-    {
-      XtNnoInterface,
-      XtCnoInterface,
-      XtRBoolean,
-      sizeof(Boolean),
-      XtOffsetOf(appdata_t, no_interface),
-      XtRBoolean,
-      (XtPointer) False
-    },
-    {
-      XtNinterface,
-      XtCinterface,
-      XtRString,
-      sizeof(char *),
-      XtOffsetOf(appdata_t, iface),
-      XtRImmediate,
-      (XtPointer) 0
-    },
-    {
-      XtNupd,
-      XtCupd,
-      XtRInt,
-      sizeof(int),
-      XtOffsetOf(appdata_t, update),
-      XtRImmediate,
-      (XtPointer) 1
-    },      
-    {
-      XtNscale,
-      XtCscale,
-      XtRInt,
-      sizeof(int),
-      XtOffsetOf(appdata_t, scale),
-      XtRImmediate,
-      (XtPointer) 1
-    },      
-    {
-      XtNavg,
-      XtCavg,
-      XtRInt,
-      sizeof(int),
-      XtOffsetOf(appdata_t, avg),
-      XtRImmediate,
-      (XtPointer) 5
-    },
-    {
-      XtNkilobytes,
-      XtCkilobytes,
-      XtRBoolean,
-      sizeof(Boolean),
-      XtOffsetOf(appdata_t, kilobytes),
-      XtRBoolean,
-      (XtPointer) False
-    },
-    {
-      XtNzeroOnReset,
-      XtCzeroOnReset,
-      XtRBoolean,
-      sizeof(Boolean),
-      XtOffsetOf(appdata_t, zeroonreset),
-      XtRBoolean,
-      (XtPointer) False
-    }
+static XtResource resources[] = {
+	{
+	 XtNhelp,
+	 XtChelp,
+	 XtRBoolean,
+	 sizeof(Boolean),
+	 XtOffsetOf(struct _appdata, help),
+	 XtRBoolean,
+	 (XtPointer) False},
+	{
+	 XtNnoValues,
+	 XtCnoValues,
+	 XtRBoolean,
+	 sizeof(Boolean),
+	 XtOffsetOf(struct _appdata, no_values),
+	 XtRBoolean,
+	 (XtPointer) False},
+	{
+	 XtNnoCharts,
+	 XtCnoCharts,
+	 XtRBoolean,
+	 sizeof(Boolean),
+	 XtOffsetOf(struct _appdata, no_charts),
+	 XtRBoolean,
+	 (XtPointer) False},
+	{
+	 XtNnoInterface,
+	 XtCnoInterface,
+	 XtRBoolean,
+	 sizeof(Boolean),
+	 XtOffsetOf(struct _appdata, no_interface),
+	 XtRBoolean,
+	 (XtPointer) False},
+	{
+	 XtNinterface,
+	 XtCinterface,
+	 XtRString,
+	 sizeof(char *),
+	 XtOffsetOf(struct _appdata, iface),
+	 XtRImmediate,
+	 (XtPointer) 0},
+	{
+	 XtNupd,
+	 XtCupd,
+	 XtRInt,
+	 sizeof(int),
+	 XtOffsetOf(struct _appdata, update),
+	 XtRImmediate,
+	 (XtPointer) 1},
+	{
+	 XtNscale,
+	 XtCscale,
+	 XtRInt,
+	 sizeof(int),
+	 XtOffsetOf(struct _appdata, scale),
+	 XtRImmediate,
+	 (XtPointer) 1},
+	{
+	 XtNavg,
+	 XtCavg,
+	 XtRInt,
+	 sizeof(int),
+	 XtOffsetOf(struct _appdata, avg),
+	 XtRImmediate,
+	 (XtPointer) 5},
+	{
+	 XtNkilobytes,
+	 XtCkilobytes,
+	 XtRBoolean,
+	 sizeof(Boolean),
+	 XtOffsetOf(struct _appdata, kilobytes),
+	 XtRBoolean,
+	 (XtPointer) False},
+	{
+	 XtNzeroOnReset,
+	 XtCzeroOnReset,
+	 XtRBoolean,
+	 sizeof(Boolean),
+	 XtOffsetOf(struct _appdata, zeroonreset),
+	 XtRBoolean,
+	 (XtPointer) False}
 };
 
 /* command line options */
-static XrmOptionDescRec options[] =
-{
-  {"-?", "*help", XrmoptionNoArg, "True"},
-  {"-h", "*help", XrmoptionNoArg, "True"},
-  {"--help", "*help", XrmoptionNoArg, "True"},
-  {"-if", "*interface", XrmoptionSepArg, NULL},
-  {"-interface", "*interface", XrmoptionSepArg, NULL},
-  {"-ni", "*noInterface", XrmoptionNoArg, "True"},
-  {"-nointerface", "*noInterface", XrmoptionNoArg, "True"},
-  {"-nc", "*noCharts", XrmoptionNoArg, "True"},
-  {"-nocharts", "*noCharts", XrmoptionNoArg, "True"},
-  {"-nv", "*noValues", XrmoptionNoArg, "True"},
-  {"-novalues", "*noValues", XrmoptionNoArg, "True"},
-  {"-u", "*upd", XrmoptionSepArg, NULL},
-  {"-update", "*upd", XrmoptionSepArg, NULL},
-  {"-a", "*avg", XrmoptionSepArg, NULL},
-  {"-average", "*avg", XrmoptionSepArg, NULL},
-  {"-kb", "*kilobytes", XrmoptionNoArg, "True"},
-  {"-kilobytes", "*kilobytes", XrmoptionNoArg, "True"},
-  {"-s", "*scale", XrmoptionSepArg, NULL},
-  {"-scale", "*scale", XrmoptionSepArg, NULL},
-  {"-zr", "*zeroOnReset", XrmoptionNoArg, "True"},
-  {"-zeroonreset", "*zeroOnReset", XrmoptionNoArg, "True"}
+static XrmOptionDescRec options[] = {
+	{"-?", "*help", XrmoptionNoArg, "True"},
+	{"-h", "*help", XrmoptionNoArg, "True"},
+	{"--help", "*help", XrmoptionNoArg, "True"},
+	{"-if", "*interface", XrmoptionSepArg, NULL},
+	{"-interface", "*interface", XrmoptionSepArg, NULL},
+	{"-ni", "*noInterface", XrmoptionNoArg, "True"},
+	{"-nointerface", "*noInterface", XrmoptionNoArg, "True"},
+	{"-nc", "*noCharts", XrmoptionNoArg, "True"},
+	{"-nocharts", "*noCharts", XrmoptionNoArg, "True"},
+	{"-nv", "*noValues", XrmoptionNoArg, "True"},
+	{"-novalues", "*noValues", XrmoptionNoArg, "True"},
+	{"-u", "*upd", XrmoptionSepArg, NULL},
+	{"-update", "*upd", XrmoptionSepArg, NULL},
+	{"-a", "*avg", XrmoptionSepArg, NULL},
+	{"-average", "*avg", XrmoptionSepArg, NULL},
+	{"-kb", "*kilobytes", XrmoptionNoArg, "True"},
+	{"-kilobytes", "*kilobytes", XrmoptionNoArg, "True"},
+	{"-s", "*scale", XrmoptionSepArg, NULL},
+	{"-scale", "*scale", XrmoptionSepArg, NULL},
+	{"-zr", "*zeroOnReset", XrmoptionNoArg, "True"},
+	{"-zeroonreset", "*zeroOnReset", XrmoptionNoArg, "True"}
 };
 
 /* time at which the program was started  */
@@ -337,314 +344,355 @@ static XtAppContext app_context;
 static Widget toplevel, paned, interface, in, out, str_in, str_out;
 
 /* fallback resources */
-static String fallback_resources[] =
-{
-  "*Label*background: LightGray",
-  "*Label*width: 280",
-  "*StripChart*width: 280",
-  "*StripChart*height: 30",
-  NULL
-};
-
-/* define actions and things you need for that */
-static void xclose(Widget w, XEvent * event, String * params, Cardinal * num);
-static XtActionsRec actions[] =
-{
-  {"xclose", (XtActionProc) xclose}
+static String fallback_resources[] = {
+	"*Label*background: LightGray",
+	"*Label*width: 280",
+	"*StripChart*width: 280",
+	"*StripChart*height: 30",
+	NULL
 };
 
 /* Used for registering interest in WM_DELETE message */
+static void xclose(Widget w, XEvent * event, String * params,
+		   Cardinal * num);
+static XtActionsRec actions[] = {
+	{"xclose", (XtActionProc) xclose}
+};
 static String translations = "<Message>WM_PROTOCOLS:xclose()\n";
 static Atom wm_protocol;
 
-/* Gives an explanation of the program's arguments */
-void
-print_help();
+/* helper functions */
+void print_help();
+void refresh(XtPointer data, XtIntervalId * id);
+void get_in_value(Widget w, XtPointer client_data, XtPointer value);
+void get_out_value(Widget w, XtPointer client_data, XtPointer value);
+struct prefixed_value use_prefix(float value);
 
-/* Procedure to gather and update the data. The parameters are not used.
+/**
+ * main - entry point for xnetload
+ * @argc: number of command-line arguments
+ * @argv: array of command-line argument strings
+ * 
+ * Parses the command-line arguments and acts on them. Then initializes the
+ * data gathering process, and creates the interface widgets. Finally it
+ * turns control over to the Xt main loop.
+ **/
+int main(int argc, char *argv[])
+{
+	/* create toplevel widget */
+	toplevel = XtVaAppInitialize(&app_context,
+				     "XNetload",
+				     options,
+				     XtNumber(options), &argc, argv,
+				     fallback_resources,
+				     NULL);
+	/* add actions */
+	XtAppAddActions(app_context, actions, XtNumber(actions));
+	/* Get application resources, put them into appdata. */
+	XtVaGetApplicationResources(toplevel,
+				    &appdata,
+				    resources, XtNumber(resources), 
+				    NULL);
+
+	/* check for help flags */
+	if (appdata.help == True) {
+		print_help();
+		return 1;
+	}
+
+	/* check if interface was given */
+	if (appdata.iface == 0) {
+		if (argc > 1) {
+			appdata.iface = argv[argc - 1];
+		} else {
+			fprintf(stderr,
+				"xnetload: No network interface specified.\n");
+			fflush(stderr);
+			print_help();
+			return 1;
+		}
+	}
+
+	/* Check the command line arguments. */
+	if (appdata.avg < 1) {
+		report_error("Average count must be > 0");
+	}
+	if (appdata.update < 1) {
+		report_error("Update time must be > 0");
+	}
+	if (appdata.scale < 1) {
+		report_error("Scale must be > 1");
+	}
+
+	/* Initialize the data gathering process. */
+	initialize(appdata.iface, appdata.avg);
+	in_str = in_alt[type];
+	out_str = out_alt[type];
+
+	/* Get the starting time. */
+	time(&starttime);
+	/* Create paned widget. */
+	paned = XtVaCreateManagedWidget("paned", panedWidgetClass,
+					toplevel,
+					XtNinternalBorderWidth, 0, NULL);
+	/* create label widget, if configured */
+	if (appdata.no_interface == False) {
+		interface = XtVaCreateManagedWidget("interface",
+						    labelWidgetClass,
+						    paned,
+						    XtNjustify, XtJustifyLeft, 
+						    XtNborderWidth, 0, 
+						    XtNshowGrip, False, NULL);
+	}
+	/* create label widget, if configured */
+	if (appdata.no_values == False) {
+		in = XtVaCreateManagedWidget("in ",
+					     labelWidgetClass,
+					     paned,
+					     XtNborderWidth, 0, 
+					     XtNjustify, XtJustifyLeft, 
+					     XtNshowGrip, False, NULL);
+	}
+	/* create Stripchart widget if configured */
+	if (appdata.no_charts == False) {
+		str_in = XtVaCreateManagedWidget("str_in",
+						 stripChartWidgetClass,
+						 paned,
+						 XtNjumpScroll, 1, 
+						 XtNminScale, 1, 
+						 XtNupdate, 1, NULL);
+
+		XtAddCallback(str_in, XtNgetValue,
+			      (XtCallbackProc) get_in_value, NULL);
+	}
+	/* create label widget, if configured */
+	if (appdata.no_values == False) {
+		out = XtVaCreateManagedWidget("out ",
+					      labelWidgetClass,
+					      paned,
+					      XtNborderWidth, 0, 
+					      XtNjustify, XtJustifyLeft, NULL);
+	}
+	/* create Stripchart widget if configured */
+	if (appdata.no_charts == False) {
+		str_out = XtVaCreateManagedWidget("str_out",
+						  stripChartWidgetClass,
+						  paned,
+						  XtNjumpScroll, 1,
+						  XtNminScale, 1,
+						  XtNupdate, 1,
+						  NULL);
+		XtAddCallback(str_out, XtNgetValue,
+			      (XtCallbackProc) get_out_value, NULL);
+	}
+	/* create windows for widgets and map them */
+	XtRealizeWidget(toplevel);
+	/* register interest in WM_DELETE_WINDOW message */
+	wm_protocol =
+	    XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW", False);
+	XSetWMProtocols(XtDisplay(toplevel), XtWindow(toplevel),
+			&wm_protocol, 1);
+	XtOverrideTranslations(toplevel,
+			       XtParseTranslationTable(translations));
+	/* refresh labels and register timer routine */
+	refresh(0, 0);
+	/* loop for events   */
+	XtAppMainLoop(app_context);
+	/* normal program end */
+	return 0;
+}
+
+/**
+ * print_help - prints a help message to stderr
+ *
+ * Prints a help message describing the program's options to stderr.
+ **/
+void print_help()
+{
+	fprintf(stderr,
+		"xnetload " VERSION
+		", Copyright (C) 1997-2002 R.F. Smith <rsmith@xs4all.nl>\n");
+	fprintf(stderr,
+		"Usage: xnetload [Xt args] [options] [interface]\n");
+	fprintf(stderr,
+		"xnetload understands all Xt standard command-line options.\n");
+	fprintf(stderr, "See X(1) for details. ");
+	fprintf(stderr, "Additional options are as follows:\n");
+	fprintf(stderr, "option name       option value\n");
+	fprintf(stderr, "-----------       ------------\n");
+	fprintf(stderr, "-?. -h, --help    Display this help.\n");
+	fprintf(stderr, "-if <name>,\n");
+	fprintf(stderr,
+		"-interface <name> Any device from /proc/net/dev.\n");
+	fprintf(stderr, "-nc, -nocharts    Don't use charts.\n");
+	fprintf(stderr,
+		"-nv, -novalues    Don't display packets/s counts.\n");
+	fprintf(stderr,
+		"-ni, -nointerface Don't display `interface' line.\n");
+	fprintf(stderr, "-kb, -kilobytes   Display count in kilobytes.\n");
+	fprintf(stderr,
+		"-u,  -update      Number of seconds between screen updates. (default is 1).\n");
+	fprintf(stderr,
+		"-s,  -scale       Number to scale kilobyte chart by.\n");
+	fprintf(stderr,
+		"-a,  -average     Number of samples to average (default is 5).\n");
+	fprintf(stderr,
+		"-zr, -zeroonreset Zero the counters after the interface has gone down.\n\n");
+	fprintf(stderr,
+		"The network interface to monitor can also be named on the\n");
+	fprintf(stderr,
+		"command-line without `-if' preceeding it, for compatiblity \n");
+	fprintf(stderr, "with previous versions. ");
+	fprintf(stderr,
+		"However, the value of the `-if' option has precedence.\n");
+}
+
+/**
+ * get_in_value - callback that provides the value for the str_in widget.
+ * @w: not used
+ * @client_data: not used
+ * @value: pointer to where the the value to display should be written
+ * 
+ * Formats the value to be displayed by the str_in widget according to the
+ * flags in appdata and provides it to the widget. 
+ **/
+void get_in_value(Widget w, XtPointer client_data, XtPointer value)
+{
+	if (appdata.kilobytes) {
+		*(double *) value =
+		    (double) average.in / (1024 * appdata.scale);
+	} else {
+		if (average.in < 1.0) {
+			*(double *) value = (double) 0;
+		} else {
+			*(double *) value = log10(average.in);
+		}
+	}
+}
+
+/**
+ * get_out_value - callback that provides the value for the str_out widget.
+ * @w: not used
+ * @client_data: not used
+ * @value: pointer to where the the value to display should be written.
+ * 
+ * Formats the value to be displayed by the str_out widget according to the
+ * flags in appdata and provides it to the widget. 
+ **/
+void get_out_value(Widget w, XtPointer client_data, XtPointer value)
+{
+	if (appdata.kilobytes) {
+		*(double *) value =
+		    (double) average.out / (1024 * appdata.scale);
+	} else {
+		if (average.out < 1.0) {
+			*(double *) value = (double) 0;
+		} else {
+			*(double *) value = log10(average.out);
+		}
+	}
+}
+
+/**
+ * refresh - gathers data and updates the displays.
+ * @data: not used
+ * @id: not used
+ * 
  * It formats the information from `average' and `max', the elapsed time 
  * since the program was started, and the interface name,
  * and sets these in the labels in the `interface',
  * 'in' and 'out' widgets. It also registers itself as a timeout routine.
- */
-void
-refresh(XtPointer data, XtIntervalId * id);
-
-/* Get packets in value for str_in widget. Uses the global `average' */
-void
-get_in_value(Widget w, XtPointer client_data, XtPointer value);
-
-/* Get packets out value for str_out widget. Uses the global `average' */
-void
-get_out_value(Widget w, XtPointer client_data, XtPointer value);
-
-/* Determines appropriate prefix to use for 'value' */
-struct prefixed_value use_prefix(float value);
-
-/* Main procedure. Checks the arguments and aborts in case of error. 
- * Otherwise it creates and maps the widgets and goes into the message
- * processing loop.
- */
-int main(int argc, char *argv[])
-{
-  /* create toplevel widget */
-  toplevel = XtVaAppInitialize(&app_context,	/* application context */
-                               "XNetload",	/* application class */
-                               options,	/* cmd-line option list */
-                               XtNumber(options),
-                               &argc, argv,	/* cmd-line args */
-                               fallback_resources,	/* fallback resources */
-                               NULL);		/* end varargs list */
-  /* add actions */
-  XtAppAddActions(app_context, actions, XtNumber(actions));
-  /* Get application resources, put them into appdata. */
-  XtVaGetApplicationResources(toplevel,
-                              &appdata,
-                              resources,
-                              XtNumber(resources),
-                              NULL);
-
-
-  /* check for help flags */
-  if (appdata.help == True) {
-      print_help();
-      return 1;
-  }
-
-  /* check if interface was given */
-  if (appdata.iface == 0) {
-    if (argc > 1) {
-      appdata.iface = argv[argc - 1];
-    } else {
-      fprintf(stderr, "xnetload: No network interface specified.\n");
-      fflush(stderr);
-      print_help();
-      return 1;
-    }
-  }
-
-  /* Check the command line arguments. */
-  if (appdata.avg < 1) {
-    report_error("Average count must be > 0");
-  }
-  if (appdata.update < 1) {
-    report_error("Update time must be > 0");
-  }
-  if (appdata.scale < 1) {
-    report_error("Scale must be > 1");
-  }
-
-  /* Initialize the data gathering process. */
-  initialize(appdata.iface, appdata.avg);
-  in_str = in_alt[type];
-  out_str = out_alt[type];
-
-  /* Get the starting time. */
-  time(&starttime);
-  /* Create paned widget. */
-  paned = XtVaCreateManagedWidget("paned",
-                                  panedWidgetClass,	/* class name */
-                                  toplevel,	/* parent */
-                                  XtNinternalBorderWidth, 0,
-                                  NULL);	/* end varargs list */
-  /* create label widget, if configured */
-  if (appdata.no_interface == False) {
-    interface = XtVaCreateManagedWidget("interface",	/* name */
-                                        labelWidgetClass,	/* class name */
-                                        paned,	/* parent */
-                                        XtNjustify, XtJustifyLeft,
-                                        XtNborderWidth, 0,
-                                        XtNshowGrip, False,
-                                        NULL);	/* end varargs list */
-  }  
-  /* create label widget, if configured */
-  if (appdata.no_values == False) {
-    in = XtVaCreateManagedWidget("in ",	/* name */
-                                 labelWidgetClass,	/* class name */
-                                 paned,	/* parent */
-                                 XtNborderWidth, 0,
-                                 XtNjustify, XtJustifyLeft,
-                                 XtNshowGrip, False,
-                                 NULL);	/* end varargs list */
-  }
-  /* create Stripchart widget if configured */
-  if (appdata.no_charts == False) {
-    str_in = XtVaCreateManagedWidget("str_in",	/* name */
-                                     stripChartWidgetClass,		/* class name */
-                                     paned,		/* parent */
-                                     XtNjumpScroll, 1,
-                                     XtNminScale, 1,
-                                     XtNupdate, 1,
-                                     NULL);		/* end varargs list */
-
-    XtAddCallback(str_in, XtNgetValue, (XtCallbackProc) get_in_value, NULL);
-  }
-  /* create label widget, if configured */
-  if (appdata.no_values == False) {
-    out = XtVaCreateManagedWidget("out ",	/* name */
-                                  labelWidgetClass,		/* class name */
-                                  paned,	/* parent */
-                                  XtNborderWidth, 0,
-                                  XtNjustify, XtJustifyLeft,
-                                  NULL);	/* end varargs list */
-  }
-  /* create Stripchart widget if configured */
-  if (appdata.no_charts == False) {
-    str_out = XtVaCreateManagedWidget("str_out",	/* name */
-                                      stripChartWidgetClass,	/* class name */
-                                      paned,	/* parent */
-                                      XtNjumpScroll, 1,
-                                      XtNminScale, 1,
-                                      XtNupdate, 1,
-                                      /*XtNshowGrip, False, */
-                                      NULL);	/* end varargs list */
-    XtAddCallback(str_out, XtNgetValue, (XtCallbackProc) get_out_value, NULL);
-  }
-  /* create windows for widgets and map them */
-  XtRealizeWidget(toplevel);
-  /* register interest in WM_DELETE_WINDOW message */
-  wm_protocol = XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW", False);
-  XSetWMProtocols(XtDisplay(toplevel), XtWindow(toplevel), &wm_protocol, 1);
-  XtOverrideTranslations(toplevel, XtParseTranslationTable(translations));
-  /* refresh labels and register timer routine */
-  refresh(0, 0);
-  /* loop for events   */
-  XtAppMainLoop(app_context);
-  /* normal program end */
-  return 0;
-}  
-
-void print_help()
-{
-  fprintf(stderr, "xnetload "VERSION", Copyright (C) 1997-2001 R.F. Smith <rsmith@xs4all.nl>\n");
-  fprintf(stderr, "Usage: xnetload [Xt args] [options] [interface]\n");
-  fprintf(stderr,
-          "xnetload understands all Xt standard command-line options.\n");
-  fprintf(stderr, "See X(1) for details. ");
-  fprintf(stderr, "Additional options are as follows:\n");
-  fprintf(stderr, "option name       option value\n");
-  fprintf(stderr, "-----------       ------------\n");
-  fprintf(stderr, "-?. -h, --help    Display this help.\n");
-  fprintf(stderr, "-if <name>,\n");
-  fprintf(stderr, "-interface <name> Any device from /proc/net/dev.\n");
-  fprintf(stderr, "-nc, -nocharts    Don't use charts.\n");
-  fprintf(stderr, "-nv, -novalues    Don't display packets/s counts.\n");
-  fprintf(stderr, "-ni, -nointerface Don't display `interface' line.\n");
-  fprintf(stderr, "-kb, -kilobytes   Display count in kilobytes.\n");
-  fprintf(stderr, "-u,  -update      Number of seconds between screen updates. (default is 1).\n");
-  fprintf(stderr, "-s,  -scale       Number to scale kilobyte chart by.\n");
-  fprintf(stderr, "-a,  -average     Number of samples to average (default is 5).\n");
-  fprintf(stderr, "-zr, -zeroonreset Zero the counters after the interface has gone down.\n\n");
-  fprintf(stderr,
-          "The network interface to monitor can also be named on the\n");
-  fprintf(stderr,
-          "command-line without `-if' preceeding it, for compatiblity \n");
-  fprintf(stderr, "with previous versions. ");
-  fprintf(stderr,
-          "However, the value of the `-if' option has precedence.\n");
-}
-
-/* Set the value that the StripChart widget str_in should display. */
-void get_in_value(Widget w, XtPointer client_data, XtPointer value)
-{
-  if (appdata.kilobytes) {
-    *(double *)value = (double)average.in/(1024*appdata.scale);
-  } else {
-    if (average.in < 1.0) {
-      *(double *)value = (double)0;
-    } else {
-      *(double *)value = log10(average.in);
-    }
-  }
-}
-
-/* Set the value that the StripChart widget str_out should display. */
-void get_out_value(Widget w, XtPointer client_data, XtPointer value)
-{
-  if (appdata.kilobytes) {
-    *(double *)value = (double)average.out/(1024*appdata.scale);
-  } else {
-    if (average.out < 1.0) {
-      *(double *)value = (double)0;
-    } else {
-      *(double *)value = log10(average.out);
-    }
-  }
-}
-
+ * 
+ **/
 void refresh(XtPointer data, XtIntervalId * id)
 {
-  long hr, min, sec;		/* time vars  */
-  struct prefixed_value pval_average, pval_max, pval_total;
-  time_t newtime;
-  char *dev_str = "%s up: %i:%02i:%02i";
-  char buf[128];
-  /* read data from /proc/net/dev */
-  update_avg(appdata.update, appdata.zeroonreset);
-  /* get new time */
-  time(&newtime);
-  /* calculate the number of seconds passed since start */
-  sec = newtime - starttime;
-  if (sec < 0) {
-    /* the clock has been reset! */
-    starttime = newtime;
-    sec = 0;
-  }
-  min = sec / 60;		/* calculate minutes  */
-  sec %= 60;			/* calculate remaining seconds */
-  hr = min / 60;
-  min %= 60;
-  if (appdata.no_interface == False) {
-    /* print the data to strings and set label resources */
-    sprintf(buf, dev_str, appdata.iface, hr, min, sec);
-    XtVaSetValues(interface, XtNlabel, buf, NULL);
-  }
-  if (appdata.no_values == False) {
-    if (type == BYTES_TYPE) {
-      pval_average = use_prefix(average.in);
-      pval_max = use_prefix(max.in);
-      pval_total = use_prefix(total.in);
-      sprintf( buf, in_str
-             , pval_average.value, pval_average.prefix
-             , pval_max.value, pval_max.prefix
-             , pval_total.value, pval_total.prefix);
-    } else
-      sprintf(buf, in_str, average.in, max.in);
-    XtVaSetValues(in, XtNlabel, buf, NULL);
-    if (type == BYTES_TYPE) {
-      pval_average = use_prefix(average.out);
-      pval_max = use_prefix(max.out);
-      pval_total = use_prefix(total.out);
-      sprintf( buf, out_str
-             , pval_average.value, pval_average.prefix
-             , pval_max.value, pval_max.prefix
-             , pval_total.value, pval_total.prefix);
-    } else
-      sprintf(buf, out_str, average.out, max.out);
-    XtVaSetValues(out, XtNlabel, buf, NULL);
-  }
-  
-  /* register the timer again */
-  XtAppAddTimeOut(app_context, 1000*appdata.update, refresh, NULL);
+	long hr, min, sec;	/* time vars  */
+	struct prefixed_value pval_average, pval_max, pval_total;
+	time_t newtime;
+	char *dev_str = "%s up: %i:%02i:%02i";
+	char buf[128];
+	/* read data from /proc/net/dev */
+	update_avg(appdata.update, appdata.zeroonreset);
+	/* get new time */
+	time(&newtime);
+	/* calculate the number of seconds passed since start */
+	sec = newtime - starttime;
+	if (sec < 0) {
+		/* the clock has been reset! */
+		starttime = newtime;
+		sec = 0;
+	}
+	min = sec / 60;		/* calculate minutes  */
+	sec %= 60;		/* calculate remaining seconds */
+	hr = min / 60;
+	min %= 60;
+	if (appdata.no_interface == False) {
+		/* print the data to strings and set label resources */
+		sprintf(buf, dev_str, appdata.iface, hr, min, sec);
+		XtVaSetValues(interface, XtNlabel, buf, NULL);
+	}
+	if (appdata.no_values == False) {
+		if (type == BYTES_TYPE) {
+			pval_average = use_prefix(average.in);
+			pval_max = use_prefix(max.in);
+			pval_total = use_prefix(total.in);
+			sprintf(buf, in_str, pval_average.value,
+				pval_average.prefix, pval_max.value,
+				pval_max.prefix, pval_total.value,
+				pval_total.prefix);
+		} else
+			sprintf(buf, in_str, average.in, max.in);
+		XtVaSetValues(in, XtNlabel, buf, NULL);
+		if (type == BYTES_TYPE) {
+			pval_average = use_prefix(average.out);
+			pval_max = use_prefix(max.out);
+			pval_total = use_prefix(total.out);
+			sprintf(buf, out_str, pval_average.value,
+				pval_average.prefix, pval_max.value,
+				pval_max.prefix, pval_total.value,
+				pval_total.prefix);
+		} else
+			sprintf(buf, out_str, average.out, max.out);
+		XtVaSetValues(out, XtNlabel, buf, NULL);
+	}
+
+	/* register the timer again */
+	XtAppAddTimeOut(app_context, 1000 * appdata.update, refresh, NULL);
 }
 
-/* close action */
+/**
+ * xclose - close action callback
+ * @w: not used
+ * @event: not used
+ * @params: not used
+ * @num: not used
+ * 
+ * Closes the program if it receives the WM_DELETE message from the window
+ * manager. 
+ */
 void xclose(Widget w, XEvent * event, String * params, Cardinal * num)
 {
-  cleanup();
-  exit(0);
+	cleanup();
+	exit(0);
 }
 
+/**
+ * use_prefix - select an appropriate prefix for a value.
+ * @value: the number that needs a prefix.
+ *
+ * Reduces the value to the range 0-1024, and selects the appropriate
+ * prefix (K,M etc.).
+ **/
 struct prefixed_value use_prefix(float value)
 {
-  int i;
-  struct prefixed_value pval;
+	int i;
+	struct prefixed_value pval;
 
-  pval.value = value;
-  for (i = 0; pval.value > 1024.0; i++) {
-    pval.value /= 1024.0;
-  }
-  pval.prefix = prefix[i];
+	pval.value = value;
+	for (i = 0; pval.value > 1024.0; i++) {
+		pval.value /= 1024.0;
+	}
+	pval.prefix = prefix[i];
 
-  return pval;
+	return pval;
 }
