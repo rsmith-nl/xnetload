@@ -1,4 +1,4 @@
-/*  $Id: data.h,v 1.1 1999/05/09 16:38:31 rsmith Exp rsmith $
+/*  $Id: data.h,v 1.2 1999/12/27 18:54:22 rsmith Exp rsmith $
  * --------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,9 @@
  * 
  * --------------------------------------------------------------------
  * $Log: data.h,v $
+ * Revision 1.2  1999/12/27 18:54:22  rsmith
+ * Remove references to `where' (for 1.7.0 release).
+ *
  * Revision 1.1  1999/05/09 16:38:31  rsmith
  * Put back into RCS.
  *
@@ -58,8 +61,9 @@ typedef struct {
 extern count_t average;    /* average count */
 extern count_t max;        /* maximum count */
 /* Values for `type' */
-#define BYTES_TYPE     1
-#define PACKETS_TYPE   2
+#define BYTES_TYPE      0
+#define KBYTES_TYPE     1
+#define PACKETS_TYPE    2
 extern int type;           /* What kind of data is gathered */
 
 /********** Functions **********/
@@ -69,7 +73,7 @@ extern void report_error(char *msg);
 
 /* Initialize the data gathering process. Sets the variables `type' and
    `where', for future reference. Returns `type' */
-extern int initialize(char *iface, int num_avg, int try_ip_acct);
+extern int initialize(char *iface, int num_avg, int kb);
 extern int cleanup(void);
 
 /* Read the new counts and update the `average' and `max'. */
