@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.13 2002/07/23 08:16:01 rsmith Exp rsmith $
+# $Id: Makefile,v 1.14 2002/07/23 09:00:50 rsmith Exp rsmith $
 # This is the Makefile for xnetload
 
 # If make complains about a missing file, run 'make depend' first
@@ -34,7 +34,7 @@ MANDIR = /usr/local/man/man1
 
 # Package name and version: BASENAME-VMAJOR.VMINOR.VPATCH.tar.gz
 BASENAME = xnetload
-VMAJOR   = 0
+VMAJOR   = 1
 VMINOR   = 11
 VPATCH   = 2
 
