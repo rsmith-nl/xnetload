@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.11 2001/06/02 10:45:48 rsmith Exp rsmith $
+/* $Id: data.c,v 1.12 2001/06/26 13:22:43 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,9 @@
  * 
  * ------------------------------------------------------------------------
  * $Log: data.c,v $
+ * Revision 1.12  2001/06/26 13:22:43  rsmith
+ * Remove overflow messages (pointed out by adrian.bridgett@iname.com).
+ *
  * Revision 1.11  2001/06/02 10:45:48  rsmith
  * Added 'debug' macro. Added dynamic memory allocation for read
  * buffer. Removed old commented-out code.
@@ -91,8 +94,8 @@
  *
  */
 
-#include <assert.h>     /* for error checking */
-#include <ctype.h>      /* for isspace() */
+#include <assert.h>		/* for error checking */
+#include <ctype.h>		/* for isspace() */
 #include <limits.h>
 #include <math.h>
 #include <stdio.h>
@@ -116,20 +119,20 @@
 #else
 #undef debug
 #define debug(TXT) (void)0
-#endif /* NDEBUG */
+#endif				/* NDEBUG */
 
 /********** Global variables **********/
 int type = 0;			/* What kind of data is gathered */
-count_t average = {(float)0,(float)0};   /* average count */
-count_t max = {(float)0,(float)0};       /* maximum count */
-count_t total = {(float)0,(float)0};     /* total count   */
+count_t average = { (float) 0, (float) 0 };	/* average count */
+count_t max = { (float) 0, (float) 0 };	/* maximum count */
+count_t total = { (float) 0, (float) 0 };	/* total count   */
 
 /********** Static variables **********/
-static char *iface_name;   /* Name of the interface to be queried. */
-static count_t last = {(float)0,(float)0};	/* Previously read values. */
-static float *inarray;     /* Array for receive counts. */
-static float *outarray;	   /* Array for transmit counts. */
-static int numavg;         /* number of samples to average */
+static char *iface_name;	/* Name of the interface to be queried. */
+static count_t last = { (float) 0, (float) 0 };	/* Previously read values. */
+static float *inarray;		/* Array for receive counts. */
+static float *outarray;		/* Array for transmit counts. */
+static int numavg;		/* number of samples to average */
 
 /********** Function definitions **********/
 
@@ -145,7 +148,7 @@ static int numavg;         /* number of samples to average */
 /* Find the needle in the haystack. The needle must be preceded by
  * whitespace and folowed by a semicolon. Returns a pointer to a location
  * behind the needle. */
-static char *afterstr(char *haystack, const char *needle);
+static char *findif(char *buffer, const char *interf);
 
 /* Read the byte or packet count for the network interface  
    named in `iface' from /proc/net/dev, store it in the  
@@ -154,311 +157,352 @@ static int read_dev(count_t * pcnt, char *iface);
 
 /********** Function implementations **********/
 
+/**
+ * report_error - report an error and terminate the program
+ * @msg: message explaining the error
+ *
+ * Logs an error to the system logfile, writes it stderr and terminates the
+ * program. 
+ **/
 void report_error(char *msg)
 {
-  assert (msg != NULL);
-  /* cleanup for ip_acct */
-  cleanup();
-  /* Open connection to system logfile. */
-  openlog("xnetload", LOG_CONS, LOG_USER);
-  /* Write a log message. */
-  syslog(LOG_ERR, "%s.\n", msg);
-  /* Close the logfile. */
-  closelog();
-  /* Write the message to stderr. */
-  fprintf(stderr, "xnetload: %s.\n", msg);
-  /* Terminate the program. */
-  exit(1);
+	assert(msg != NULL);
+	/* cleanup for ip_acct */
+	cleanup();
+	/* Open connection to system logfile. */
+	openlog("xnetload", LOG_CONS, LOG_USER);
+	/* Write a log message. */
+	syslog(LOG_ERR, "%s.\n", msg);
+	/* Close the logfile. */
+	closelog();
+	/* Write the message to stderr. */
+	fprintf(stderr, "xnetload: %s.\n", msg);
+	/* Terminate the program. */
+	exit(1);
 }
 
-int initialize(char *iface, int num_avg/*  , int kb */)
+/**
+ * initialize - initializes global variables
+ * @iface: the interface to monitor
+ * @num_avg: the number of seconds to average
+ * 
+ * Initializes the global variables, and allocates memory for the arrays of
+ * recorded values.
+ **/
+int initialize(char *iface, int num_avg)
 {
-  int r;
+	int r;
 
-  assert (iface != NULL);
-  assert (num_avg > 0);
-  
-  /* Initialize global variables. */
-  iface_name = iface;
-  numavg = num_avg;
-  average.in = (float)0;
-  average.out = (float)0;
-  total.in  = (float)0;
-  total.out = (float)0;
+	assert(iface != NULL);
+	assert(num_avg > 0);
 
-  inarray = (float*)malloc(numavg*sizeof(float));
-  outarray = (float*)malloc(numavg*sizeof(float));
-  if (inarray == 0 || outarray == 0) {
-    report_error("Memory allocation failed");
-  }
-  for (r = 0; r < numavg; r++) {
-    inarray[r] = (float)0;
-    outarray[r] = (float)0;
-  }
+	/* Initialize global variables. */
+	iface_name = iface;
+	numavg = num_avg;
+	average.in = (float) 0;
+	average.out = (float) 0;
+	total.in = (float) 0;
+	total.out = (float) 0;
 
-  r = read_dev(&last, iface);
-  switch (r) {
-  case READ_MEM_ERR:
-    report_error("Not enough memory to read /proc/net/dev");
-    break;
-  case READ_FOPEN_ERR:
-    report_error("Could not open /proc/net/dev");
-    break;
-  case READ_IFACE_ERR:
-    report_error("Interface not found in /proc/net/dev");
-    break;
-  case READ_SCAN_ERR:
-    report_error("Error scanning /proc/net/dev");
-    break;
-  case READ_BYTES:
-    type = BYTES_TYPE;
-    break;
-  case READ_PACKETS:
-    type = PACKETS_TYPE;
-    break;
-  default:
-    report_error("Unknown return value from read_dev");
-  }    
-  return type;
-}  
+	inarray = (float *) malloc(numavg * sizeof(float));
+	outarray = (float *) malloc(numavg * sizeof(float));
+	if (inarray == 0 || outarray == 0) {
+		report_error("Memory allocation failed");
+	}
+	for (r = 0; r < numavg; r++) {
+		inarray[r] = (float) 0;
+		outarray[r] = (float) 0;
+	}
 
+	r = read_dev(&last, iface);
+	switch (r) {
+	case READ_MEM_ERR:
+		report_error("Not enough memory to read /proc/net/dev");
+		break;
+	case READ_FOPEN_ERR:
+		report_error("Could not open /proc/net/dev");
+		break;
+	case READ_IFACE_ERR:
+		report_error("Interface not found in /proc/net/dev");
+		break;
+	case READ_SCAN_ERR:
+		report_error("Error scanning /proc/net/dev");
+		break;
+	case READ_BYTES:
+		type = BYTES_TYPE;
+		break;
+	case READ_PACKETS:
+		type = PACKETS_TYPE;
+		break;
+	default:
+		report_error("Unknown return value from read_dev");
+	}
+	return type;
+}
+
+/**
+ * cleanup - perfoms cleanup actions before the program is halted
+ *
+ * Frees the arrays that were allocated at startup.
+ **/
 int cleanup(void)
 {
-  free(inarray);
-  free(outarray);
-  return (0);
+	free(inarray);
+	free(outarray);
+	return (0);
 }
 
-void update_avg(int seconds, int zeroOnReset )
+/**
+ * update_avg - read new data and update the global variables
+ * @seconds: number of seconds since last invocation
+ * @zero_on_reset: should the totals be zeroed on a reset
+ *
+ * Reads the new numbers, recalculates the global variables and updates
+ * them, so the interface can display the new values.
+ **/
+void update_avg(int seconds, int zero_on_reset)
 {
-  count_t current = {0.0,0.0};
-  count_t diff;
-  int i;
-  static int index;
+	count_t current = { 0.0, 0.0 };
+	count_t diff;
+	int i;
+	static int index;
 
-  if (seconds < 0)
-    seconds = -seconds;
+	if (seconds < 0)
+		seconds = -seconds;
 
-  /* Read the data. */
-  i = read_dev(&current, iface_name);
-  switch (i) {
-  case READ_FOPEN_ERR:
-    report_error("Could not open /proc/net/dev");
-    break;
-  case READ_IFACE_ERR:
-    exit(0);
-    break;
-  case READ_MEM_ERR:
-    report_error("Not enough memory to read /proc/net/dev");
-    break;
-  case READ_SCAN_ERR:
-    report_error("Error scanning /proc/net/dev");
-    break;
-  }
+	/* Read the data. */
+	i = read_dev(&current, iface_name);
+	switch (i) {
+	case READ_FOPEN_ERR:
+		report_error("Could not open /proc/net/dev");
+		break;
+	case READ_IFACE_ERR:
+		exit(0);
+		break;
+	case READ_MEM_ERR:
+		report_error("Not enough memory to read /proc/net/dev");
+		break;
+	case READ_SCAN_ERR:
+		report_error("Error scanning /proc/net/dev");
+		break;
+	}
 
-  /* Try to detect counter overrun. current and last are floating point
-   * values, but current is filled from a %u, and so capped to UINT_MAX */
-  if (current.in < last.in) {
-    if ( zeroOnReset ) {
-      diff.in  = 0;
-      total.in = 0;
-      max.in   = 0;
-    }
-  } else {
-    diff.in = current.in - last.in;
-  }
-  if (current.out < last.out) {
-    if ( zeroOnReset ) {
-      diff.out  = 0;
-      total.out = 0;
-      max.out   = 0;
-    }
-  } else {
-    diff.out = current.out - last.out;
-  }
+	/* Try to detect counter overrun. current and last are floating
+	 * point values, but current is filled from a %u, and so capped to
+	 * UINT_MAX */
+	if (current.in < last.in) {	/* wraparound or broken connection */
+		if (zero_on_reset || average.in == 0) {	/* prob. wraparound */
+			diff.in = total.in = max.in = 0;
+		}
+	} else {
+		diff.in = current.in - last.in;
+	}
+	if (current.out < last.out) {
+		if (zero_on_reset || average.out == 0) {
+			diff.out = total.out = max.out = 0;
+		}
+	} else {
+		diff.out = current.out - last.out;
+	}
 
-  /* Add that to the total */
-  total.in  += diff.in;
-  total.out += diff.out;
+	/* Add that to the total */
+	total.in += diff.in;
+	total.out += diff.out;
 
-  /* Calculate the difference per update */
-  diff.in /= seconds;
-  diff.out /= seconds;
-  /* Update the arrays. */
-  inarray[index] = diff.in;
-  outarray[index++] = diff.out;
-  if (index == numavg) {
-    index = 0;
-  }
+	/* Calculate the difference per update */
+	diff.in /= seconds;
+	diff.out /= seconds;
+	/* Update the arrays. */
+	inarray[index] = diff.in;
+	outarray[index++] = diff.out;
+	if (index == numavg) {
+		index = 0;
+	}
 
-  /* Calculate the average */
-  average.in = average.out = (float)0;
-  for (i = 0; i < numavg; i++) {
-    average.in += inarray[i];
-    average.out += outarray[i];
-  }
-  average.in /= numavg;
-  average.out /= numavg;
+	/* Calculate the average */
+	average.in = average.out = (float) 0;
+	for (i = 0; i < numavg; i++) {
+		average.in += inarray[i];
+		average.out += outarray[i];
+	}
+	average.in /= numavg;
+	average.out /= numavg;
 
-  /* Update the maximum. */
-  if (average.in > max.in)
-    max.in = average.in;
-  if (average.out > max.out)
-    max.out = average.out;
+	/* Update the maximum. */
+	if (average.in > max.in)
+		max.in = average.in;
+	if (average.out > max.out)
+		max.out = average.out;
 
-  /* Store current count for further reference. */
-  memcpy(&last, &current, sizeof(count_t));
+	/* Store current count for further reference. */
+	memcpy(&last, &current, sizeof(count_t));
 }
 
-char *afterstr(char *haystack, const char *needle)
-{
-  char *pch;
-  char *ptr = haystack;
+/**
+ * findif - finds the desired interface in the buffer
+ * @buffer: the text to scan
+ * @if: the interface to find
+ *
+ * Find the correct interface in the buffer. The interface string can be
+ * preceeded by whitespace, and must be followed by a colon. Returns a
+ * pointer to te location behind the colon, or NULL if the interface can't
+ * be located.
+ **/
+char *findif(char *buffer, const char *interf){
+	char *pch = 0;
+	char *ptr = buffer;
 
-  assert (haystack != NULL);
-  assert (needle != NULL);
+	assert(buffer != NULL);
+	assert(interf != NULL);
 
-  do {
-    pch = strstr (ptr, needle);
-    if (pch) {
-      /* Check for leading whitespace, if not begin of */
-      if (pch != haystack && isspace((int)(*(pch-1))) == 0) {
-        pch += strlen (needle);
-        ptr = pch;
-        continue;
-      }
-      /* Check for closing ':' */
-      pch += strlen (needle);
-      if (*pch == ':') {
-        pch++;
-        break; /* Found it; break out of the loop. */
-      }
-      /* Set new start of buffer if not found. */
-      ptr = pch;
-    }
-  } while (pch);
-  return pch;
+	do {
+		pch = strstr(ptr, interf);
+		if (pch) {
+			/* Check for leading whitespace, if not begin of */
+			if (pch != buffer
+			    && isspace((int) (*(pch - 1))) == 0) {
+				pch += strlen(interf);
+				ptr = pch;
+				continue;
+			}
+			/* Check for closing ':' */
+			pch += strlen(interf);
+			if (*pch == ':') {
+				pch++;
+				break;	/* Found it; break out of the loop. */
+			}
+			/* Set new start of buffer if not found. */
+			ptr = pch;
+		}
+	} while (pch);
+	return pch;
 }
 
-int read_dev(count_t *pcnt, char *iface)
+/**
+ * read_dev - reads the values for the selected @iface.
+ * @pcnt: location where the read values are written to
+ * @iface: the interface to scan for.
+ *
+ * 
+ **/
+int read_dev(count_t * pcnt, char *iface)
 {
-  FILE *f;
-  static int bufsize = BUFSIZE;
-/*    char buf[BUFSIZE]; */
-  static char *buf = 0;
-  char *newbuf;
-  int num, retval;
-  char *pch;
-  unsigned long int values[16];
+	FILE *f;
+	static int bufsize = BUFSIZE;
+	static char *buf = 0;
+	char *newbuf;
+	int num, retval;
+	char *pch;
+	unsigned long int values[16];
 
-  assert (pcnt != NULL);
-  assert (iface != NULL);
+	assert(pcnt != NULL);
+	assert(iface != NULL);
 
-  /* create buffer if it doesn't exist */
-  if (buf == 0) {
-    buf = malloc (bufsize);
-    if (buf == 0)
-      return READ_MEM_ERR;
-  }  
+	/* create buffer if it doesn't exist */
+	if (buf == 0) {
+		buf = malloc(bufsize);
+		if (buf == 0)
+			return READ_MEM_ERR;
+	}
 
-  /* Try to open /proc/net/dev for reading. */
-  f = fopen("/proc/net/dev", "r");
-  if (f == 0) {
-    /* Unable to open file. */
-    return READ_FOPEN_ERR;
-  } 
-  /* Read the file into a buffer. */
- read_again:
-  num = fread(buf, 1, bufsize - 1, f);
-  if (ferror(f)) {      /* check for read errors */
-    fclose(f);
-    return READ_FREAD_ERR;
-  } else if (!feof(f)) {    /* check if we need a larger buffer */
-    bufsize *= 2;
-    newbuf = realloc(buf, bufsize);
-    if (newbuf == 0) {
-      bufsize /= 2;
-      fclose(f);
-      return READ_MEM_ERR;
-    }
-    buf = newbuf;
-    rewind (f);
-    debug ("buffer enlarged, read again");
-    goto read_again;
-  } else if (num < bufsize/2-1) {
-    newbuf = realloc(buf, bufsize/2);
-    if (newbuf) {
-      buf = newbuf;
-      bufsize /= 2;
-    } 
-  }
+	/* Try to open /proc/net/dev for reading. */
+	f = fopen("/proc/net/dev", "r");
+	if (f == 0) {
+		/* Unable to open file. */
+		return READ_FOPEN_ERR;
+	}
+	/* Read the file into a buffer. */
+      read_again:
+	num = fread(buf, 1, bufsize - 1, f);
+	if (ferror(f)) {	/* check for read errors */
+		fclose(f);
+		return READ_FREAD_ERR;
+	} else if (!feof(f)) {	/* check if we need a larger buffer */
+		bufsize *= 2;
+		newbuf = realloc(buf, bufsize);
+		if (newbuf == 0) {
+			bufsize /= 2;
+			fclose(f);
+			return READ_MEM_ERR;
+		}
+		buf = newbuf;
+		rewind(f);
+		debug("buffer enlarged, read again");
+		goto read_again;
+	} else if (num < bufsize / 2 - 1) {
+		newbuf = realloc(buf, bufsize / 2);
+		if (newbuf) {
+			buf = newbuf;
+			bufsize /= 2;
+		}
+	}
 
-  /* Terminate the buffer with 0. */
-  buf[num] = 0;
-  /* Close the file. */
-  fclose(f);
+	/* Terminate the buffer with 0. */
+	buf[num] = 0;
+	/* Close the file. */
+	fclose(f);
 
-  /* Seek the interface we're looking for. */
-  pch = afterstr(buf, iface);
-  if (pch == 0) {
-    /* Interface not found. */
-    return READ_IFACE_ERR;
-  }
-  /* There are different layouts for /proc/net/dev:
-   * there are several fields for received and transmitted bytes
-   * on 2.0.32:            on 2.1.>90         on 2.1.<90
-   *              RECEIVE  (and 2.2.x, 2.4.x)        
-   *  > 1 packets         >  1 bytes          > 1 bytes
-   *    2 errs               2 packets          2 packets
-   *    3 drop               3 errs             3 errs
-   *    4 fifo               4 drop             4 drop
-   *    5 frame              5 fifo             5 fifo
-   *                         6 frame            6 frame
-   *                         7 compressed
-   *                         8  multicast
-   *              TRANSMIT
-   *  > 6 packets         >  9 bytes          > 7 bytes
-   *    7 errs              10 packets          8 packets
-   *    8 drop              11 errs             9 errs
-   *    9 fifo              12 drop            10 drop
-   *   10 colls             13 fifo            11 fifo
-   *   11 carrier           14 colls           12 colls
-   *                        15 carrier         13 carrier
-   *                        16 compressed      14 multicast
-   */
-  num = sscanf(pch, 
-           "%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
-               &values[0], &values[1], &values[2], &values[3],
-               &values[4], &values[5], &values[6], &values[7],
-               &values[8], &values[9], &values[10], &values[11],
-               &values[12], &values[13], &values[14], &values[15]);
-  switch (num) {
-  case 11:			/* 2.0.xx kernel, can only read packets. */
-    retval = READ_PACKETS;
-    if (pcnt) {
-      pcnt->in = (float) values[0];
-      pcnt->out = (float) values[5];
-    }
-    break;
-  case 14:			/* 2.1.<90 kernel, can read byte counts. */
-    retval = READ_BYTES;
-    if (pcnt) {
-      pcnt->in = (float) values[0];
-      pcnt->out = (float) values[6];
-    }
-    break;
-  case 16:			/* 2.1.90+, 2.2.x or 2.4.x kernel, can read byte counts. */
-    retval = READ_BYTES;
-    if (pcnt) {
-      pcnt->in = (float) values[0];
-      pcnt->out = (float) values[8];
-    }
-    break;
-  default:
-    /* Unknown layout/scan error. */
-    return READ_SCAN_ERR;
-  }
+	/* Seek the interface we're looking for. */
+	pch = findif(buf, iface);
+	if (pch == 0) {
+		/* Interface not found. */
+		return READ_IFACE_ERR;
+	}
+	/* There are different layouts for /proc/net/dev:
+	 * there are several fields for received and transmitted bytes
+	 * on 2.0.32:            on 2.1.>90         on 2.1.<90
+	 *              RECEIVE  (and 2.2.x, 2.4.x)        
+	 *  > 1 packets         >  1 bytes          > 1 bytes
+	 *    2 errs               2 packets          2 packets
+	 *    3 drop               3 errs             3 errs
+	 *    4 fifo               4 drop             4 drop
+	 *    5 frame              5 fifo             5 fifo
+	 *                         6 frame            6 frame
+	 *                         7 compressed
+	 *                         8  multicast
+	 *              TRANSMIT
+	 *  > 6 packets         >  9 bytes          > 7 bytes
+	 *    7 errs              10 packets          8 packets
+	 *    8 drop              11 errs             9 errs
+	 *    9 fifo              12 drop            10 drop
+	 *   10 colls             13 fifo            11 fifo
+	 *   11 carrier           14 colls           12 colls
+	 *                        15 carrier         13 carrier
+	 *                        16 compressed      14 multicast
+	 */
+	num = sscanf(pch,
+		     "%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
+		     &values[0], &values[1], &values[2], &values[3],
+		     &values[4], &values[5], &values[6], &values[7],
+		     &values[8], &values[9], &values[10], &values[11],
+		     &values[12], &values[13], &values[14], &values[15]);
+	switch (num) {
+	case 11:		/* 2.0.xx kernel, can only read packets. */
+		retval = READ_PACKETS;
+		if (pcnt) {
+			pcnt->in = (float) values[0];
+			pcnt->out = (float) values[5];
+		}
+		break;
+	case 14:		/* 2.1.<90 kernel, can read byte counts. */
+		retval = READ_BYTES;
+		if (pcnt) {
+			pcnt->in = (float) values[0];
+			pcnt->out = (float) values[6];
+		}
+		break;
+	case 16:		/* 2.1.90+, 2.2.x or 2.4.x kernel, can read byte counts. */
+		retval = READ_BYTES;
+		if (pcnt) {
+			pcnt->in = (float) values[0];
+			pcnt->out = (float) values[8];
+		}
+		break;
+	default:
+		/* Unknown layout/scan error. */
+		return READ_SCAN_ERR;
+	}
 
-  /* probe went OK */
-  return retval;
+	/* probe went OK */
+	return retval;
 }
