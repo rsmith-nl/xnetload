@@ -1,4 +1,4 @@
-/*  $Id: data.h,v 1.5 2000/02/22 17:41:29 rsmith Exp rsmith $
+/*  $Id: data.h,v 1.6 2000/04/14 20:23:26 rsmith Exp rsmith $
  * --------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,9 @@
  * 
  * --------------------------------------------------------------------
  * $Log: data.h,v $
+ * Revision 1.6  2000/04/14 20:23:26  rsmith
+ * Updated the copyright notice for 2000.
+ *
  * Revision 1.5  2000/02/22 17:41:29  rsmith
  * Added `total' count. Patch provided by
  * Paul Schilling <pfschill@bigfoot.com>.
@@ -88,6 +91,6 @@ extern int initialize(char *iface, int num_avg/*  , int kb */);
 extern int cleanup(void);
 
 /* Read the new counts and update the `average' and `max' and 'total'. */
-extern void update_avg(int seconds);
+extern void update_avg(int seconds, int zeroOnReset );
 
 #endif /* _DATA_H */
