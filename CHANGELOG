@@ -1,8 +1,21 @@
-$Id: CHANGELOG,v 1.3 1999/12/30 09:59:23 rsmith Exp rsmith $
+$Id: CHANGELOG,v 1.4 1999/12/30 10:30:01 rsmith Exp rsmith $
 
 Changes for xnetload
 --------------------
-version 1.7.1
+version 1.8.0
+- Added -scale and totals features, contributed by Paul Schilling.
+
+version 1.7.2
+- renamed 1.7.1b3 to 1.7.2 to avoid confusion. 
+
+version 1.7.1b3
+- The labels always display kB/s, if bytes are read.
+- Moved all kB/log10(bytes) stuff to x11-ui.c
+
+1.7.1b1 and 1.7.1b2 were only tested by some people. They were merely
+bug-fixes. 
+
+original version 1.7.1
 - Fixed log10 conversion bug. Thanks to Dennis Bijwaard 
   for spotting this.
 - Added a fix for counter overrun.
