@@ -1,0 +1,63 @@
+$Id$
+
+Changes for xnetload
+--------------------
+
+version 1.7.0
+- added the -kb option
+- removed support for outdated ip-accounting.
+
+version 1.6.1
+- doubled the buffer for reading /proc/net/dev. Several people noted this bug.
+- fixed some small bugs.
+
+version 1.6.0
+Oops. forgot to write them down.
+
+version 1.5.1
+- Updated the program to use the new /proc/net/dev layout in the 2.1.9x
+  kernels. This also works with the 2.2.x kernels.
+
+version 1.5.0
+- Added a patch from Tony Mancill<tmancill@debian.org> to issue
+  IP-accounting rules if necessary. 
+- Changed the graphs to display log10 of the packet/byte count.
+
+version 1.4.2
+- Changed my e-mail address. The old address (rsmit06@ibm.net) will become
+  invalid in juli '98.
+
+version 1.4.1
+- Added patch level for bug-fixing :-)
+- Fixed a out-of bounds string write bug in `read_ip_acct'. Thanks to
+  Don May <d.may@computer.org> for spotting this.
+
+version 1.4
+- Fixed a bug in the code for calculating the average.
+- Code separated into data-gathering and user-interface.
+  (I'm thinking on adding a GTK+ interface for the next release, it would
+   be a compile-time choice between Xaw/GTK+ interface)
+- Modified it to make it work with 2.1.xx kernels.
+  Thanks to Adrian Bridgett <adrian.bridgett@poboxes.com> for sending in
+  this patch.
+- Added a fix to make it work with IP-aliases. Thanks to Raphael Wegmann
+  <wegmann@mail.psi.co.at> for contributing it.
+- It display bytes/s if IP-accounting is enabled.
+  Tony Mancill <tmancill@debian.org> submitted the basic code.
+- Displays bytes/s on a kernel that supports it. (2.1.xx)
+- The period over which the packet count is averaged can be changed in the
+  makefile.
+
+Version 1.3 employs some code for snooping on sockets. It wasn't publicly
+released, since it was a CPU hog, and only works on AF_UNIX type sockets.
+
+version 1.2:
+- Fixed a bug in reading large packet counts.
+  (Thanks to Rik Hemsley for spotting these.)
+- Added library and include-file paths to the makefile. 
+- Added Strip-Charts to display graphs of the network traffic.
+- Added resources and command-line options to make it more configurable.
+
+version 1.1:
+- The program now responds to the WM_DELETE_WINDOW message (by terminating
+  itself).
