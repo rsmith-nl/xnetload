@@ -1,6 +1,6 @@
-$Id: README,v 1.4 2000/06/07 16:52:15 rsmith Exp rsmith $
+$Id: README,v 1.5 2000/09/26 19:51:42 rsmith Exp rsmith $
 
-This is the README file for xnetload 1.9.0 for Linux.
+This is the README file for xnetload 1.10.0 for Linux.
 
 Purpose
 -------
@@ -14,7 +14,7 @@ New versions of this program are allways available first on the homepage:
 http://www.xs4all.nl/~rsmith/software/
 
 On this web-page you'll also find an md5sum of the source package.  Run
-`md5sum xnetload-1.9.0.tar.gz' and compare the output with the number found
+`md5sum xnetload-1.10.0.tar.gz' and compare the output with the number found
 on the web-page. If the numbers differ, the source package was either
 mauled during download (use binary download if you're ftp-ing) or altered.
 
@@ -61,6 +61,6 @@ snail-mail: R.F. Smith
 
 The author only release source code packages. This is the best way to work
 around library versions and related difficulties. (It also means that other
-people, using the source, can find the bugs :-) If you want to build a
-binary package, by all means do so, but please identify it as your doing
-and responsibility.
+people, using the source, can find bugs :-) If you want to build a binary
+package, by all means do so, but please identify it as your doing and
+responsibility.
