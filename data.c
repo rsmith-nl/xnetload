@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.1 1999/05/09 16:39:26 rsmith Exp rsmith $
+/* $Id: data.c,v 1.2 1999/06/09 18:40:29 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,10 +28,11 @@
  * 
  * ------------------------------------------------------------------------
  * $Log: data.c,v $
+ * Revision 1.2  1999/06/09 18:40:29  rsmith
+ * Enlarged the file buffer for /proc/net/xxx to 2048 bytes.
+ *
  * Revision 1.1  1999/05/09 16:39:26  rsmith
  * Initial revision
- *
- *
  *
  * Revision 1.6  1998/06/21 09:56:44  rsmith
  * - Added Tony's patch for emitting IP-accounting rules.
@@ -54,7 +55,6 @@
  * Revision 1.1  1998/04/10 19:53:32  rsmit06
  * Initial revision
  *
- *
  */
 
 #include <syslog.h>		/* for error reporting */
@@ -62,22 +62,22 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 #include "data.h"
 
 /* size of buffer to copy /proc/net/xxx to */
 #define BUFSIZE 2048
 
 /********** Global variables **********/
-count_t average;		/* average count */
-count_t max;			/* maximum count */
+count_t average = {(float)0,(float)0};		/* average count */
+count_t max = {(float)0,(float)0};			/* maximum count */
 int type = 0;			/* What kind of data is gathered */
 
 /********** Static variables **********/
 static char *iface_name;	      /* Name of the interface to be queried. */
-static count_t last;		         /* Previously read values. */
+static count_t last = {(float)0,(float)0};	/* Previously read values. */
 static float *inarray;    /* Array for receive counts. */
 static float *outarray;	/* Array for transmit counts. */
-static int where = 0;		      /* Where to gather data from. */
 static int numavg;               /* number of samples to average */
 
 /********** Function definitions **********/
@@ -97,21 +97,6 @@ static int numavg;               /* number of samples to average */
    variable pointed to by `pcnt', if `pcnt' is not NULL. */
 static int read_dev(count_t * pcnt, char *iface);
 
-/* Snatched from the 2.0.32 kernel code: 
-   /usr/src/linux/include/linux/ip_fw.h line 109 */
-#ifndef IP_FW_F_ACCTIN
-#define IP_FW_F_ACCTIN  0x1000	/* Account incoming packets only.     */
-#endif				/* IP_FW_F_ACCTIN */
-
-#ifndef IP_FW_F_ACCTOUT
-#define IP_FW_F_ACCTOUT 0x2000	/* Account outgoing packets only.     */
-#endif				/* IP_FW_F_ACCTOUT */
-
-/* Read the byte count for the network interface named in `iface'  
-   from /proc/net/ip_acct, store it in the  
-   variable pointed to by `pcnt', if `pcnt' is not NULL. */
-static int read_ip_acct(count_t * pcnt, char *iface);
-
 /********** Function implementations **********/
 
 void report_error(char *msg)
@@ -130,119 +115,98 @@ void report_error(char *msg)
   exit(1);
 }
 
-int initialize(char *iface, int num_avg, int try_ip_acct)
+int initialize(char *iface, int num_avg, int kb)
 {
   int r;
-  char ipfwstr[80];
   
   /* Initialize global variables. */
   iface_name = iface;
   numavg = num_avg;
+  average.in = (float)0;
+  average.out = (float)0;
 
-  inarray = (float*)calloc(numavg, sizeof(float));
-  outarray = (float*)calloc(numavg, sizeof(float));
+  inarray = (float*)malloc(numavg*sizeof(float));
+  outarray = (float*)malloc(numavg*sizeof(float));
   if (inarray == 0 || outarray == 0) {
     report_error("Memory allocation failed");
   }
-
-  /* If we want to use ip_accounting, try it. */
-  if (try_ip_acct) {
-    /* check to see if we are root or setuid root */
-    if (geteuid() != (uid_t) 0) {
-      report_error("Must run as root to install ip_acct rules");
-    }
-    /* setup the ip_acct rules via system() */
-    /* the "in" rule */
-    strcpy(ipfwstr, "/sbin/ipfwadm -A in -i -W ");
-    strcpy((ipfwstr + strlen(ipfwstr)), iface);
-    if (system(ipfwstr) != 0) {
-      report_error("system() call for ipfwadm failed");
-    }
-    /* the "out" rule */
-    strcpy(ipfwstr, "/sbin/ipfwadm -A out -i -W ");
-    strcpy((ipfwstr + strlen(ipfwstr)), iface);
-    if (system(ipfwstr) != 0) {
-      report_error("system() call for ipfwadm failed");
-    }
-    r = read_ip_acct(&last, iface);
-    where = IP_ACCT;
-    switch (r) {
-    case READ_VTYPE_ERR:
-      report_error("Unknown accounting rule type");
-      break;
-    case READ_ALLOC_ERR:
-      report_error("Memory allocation failed");
-      break;
-    case READ_FOPEN_ERR:
-      report_error("Could not open /proc/net/ip_acct");
-      break;
-    case READ_IFACE_ERR:
-      report_error("Interface not found in /proc/net/ip_acct");
-      break;
-    case READ_SCAN_ERR:
-      report_error("Error scanning /proc/net/ip_acct");
-      break;
-    case READ_BYTES:
-      type = BYTES_TYPE;
-      break;
-    default:
-      report_error("Unknown return value from read_ip_acct");
-    }
-  } else { /* Use proc/net/dev file */
-    r = read_dev(&last, iface);
-    where = DEV;
-    switch (r) {
-    case READ_FOPEN_ERR:
-      report_error("Could not open /proc/net/dev");
-      break;
-    case READ_IFACE_ERR:
-      report_error("Interface not found in /proc/net/dev");
-      break;
-    case READ_SCAN_ERR:
-      report_error("Error scanning /proc/net/dev");
-      break;
-    case READ_BYTES:
-      type = BYTES_TYPE;
-      break;
-    case READ_PACKETS:
-      type = PACKETS_TYPE;
-      break;
-    default:
-      report_error("Unknown return value from read_dev");
-    }    
+  for (r = 0; r < numavg; r++) {
+    inarray[r] = (float)0;
+    outarray[r] = (float)0;
   }
+
+  r = read_dev(&last, iface);
+  switch (r) {
+  case READ_FOPEN_ERR:
+    report_error("Could not open /proc/net/dev");
+    break;
+  case READ_IFACE_ERR:
+    report_error("Interface not found in /proc/net/dev");
+    break;
+  case READ_SCAN_ERR:
+    report_error("Error scanning /proc/net/dev");
+    break;
+  case READ_BYTES:
+    if (kb) {
+      type = KBYTES_TYPE;
+    } else {  
+      type = BYTES_TYPE;
+    }
+    break;
+  case READ_PACKETS:
+    type = PACKETS_TYPE;
+    break;
+  default:
+    report_error("Unknown return value from read_dev");
+  }    
+  /* Do appropriate conversion */
+  switch (type) {
+  case BYTES_TYPE:
+  case PACKETS_TYPE:
+    if (last.in < 1.0) {
+      last.in = 0.0;
+    } else {
+      last.in = log10(last.in);
+    }
+    if (last.out < 1.0) {
+      last.out = 0.0;
+    } else {
+      last.out = log10(last.out);
+    }
+    break;
+  case KBYTES_TYPE:
+    last.in /= 1024;
+    last.out /= 1024;
+    break;
+  default:
+    last.in = (float)0;
+    last.out = (float)0;
+    /* do nothing */
+    break;
+  }
+
   return type;
 }  
 
 int cleanup(void)
 {
-  char ipfwstr[80];
-
   free(inarray);
   free(outarray);
-  /* assumption:  'where' and 'iface_name' are set */
-  if (where == IP_ACCT) {
-    strcpy(ipfwstr, "/sbin/ipfwadm -A in -d -W ");
-    strcpy((ipfwstr + strlen(ipfwstr)), iface_name);
-    system(ipfwstr);	/* cannot call report_error() - recursion */
-    strcpy(ipfwstr, "/sbin/ipfwadm -A out -d -W ");
-    strcpy((ipfwstr + strlen(ipfwstr)), iface_name);
-    system(ipfwstr);	/* cannot call report_error() - recursion */
-  }
   return (0);
 }
 
 void update_avg(int seconds)
 {
-  count_t current;
+  count_t current = {0.0,0.0};
   count_t diff;
   int i;
+  static int index;
+
+  /* Quit if invalid number of seconds is given */
+  if (seconds <= 0)
+    return;
   /* Read the data. */
-  if (where == IP_ACCT) {
-    i = read_ip_acct(&current, iface_name);
-  } else {
-    i = read_dev(&current, iface_name);
-  }
+  i = read_dev(&current, iface_name);
   if (i < 0) {
     if (i == READ_IFACE_ERR) {
       /* Interface has disappeared from the file: we've gone offline. */
@@ -251,25 +215,50 @@ void update_avg(int seconds)
       report_error("Terminating");
     }
   }
-  /* Quit if invalid number of seconds is given */
-  if (seconds <= 0)
-    return;
+  /* Do appropriate conversion */
+  switch (type) {
+  case BYTES_TYPE:
+  case PACKETS_TYPE:
+    if (current.in < 1.0) {
+      current.in = 0.0;
+    } else {
+      current.in = log10(current.in);
+    }
+    if (current.out < 1.0) {
+      current.out = 0.0;
+    } else {
+      current.out = log10(current.out);
+    }
+    break;
+  case KBYTES_TYPE:
+    current.in /= 1024;
+    current.out /= 1024;
+    break;
+  default:
+    current.in = (float)0;
+    current.out = (float)0;
+    /* do nothing */
+    break;
+  }
   /* Calculate the difference with the last call */
   diff.in = (current.in - last.in)/seconds;
   diff.out = (current.out - last.out)/seconds;
   /* Update the arrays. */
-  memmove(&inarray[1], &inarray[0], (numavg - 1) * sizeof(float));
-  inarray[0] = diff.in;
-  memmove(&outarray[1], &outarray[0], (numavg - 1) * sizeof(float));
-  outarray[0] = diff.out;
+  inarray[index] = diff.in;
+  outarray[index++] = diff.out;
+  if (index == numavg) {
+    index = 0;
+  }
+
   /* Calculate the average */
-  average.in = average.out = 0;
+  average.in = average.out = (float)0;
   for (i = 0; i < numavg; i++) {
     average.in += inarray[i];
     average.out += outarray[i];
   }
   average.in /= numavg;
   average.out /= numavg;
+
   /* Update the maximum. */
   if (average.in > max.in)
     max.in = average.in;
@@ -373,74 +362,3 @@ int read_dev(count_t * pcnt, char *iface)
   /* probe went OK */
   return retval;
 }
-
-int read_ip_acct(count_t * pcnt, char *iface)
-{
-  FILE *f;
-  char buf[BUFSIZE];
-  int num, t, len;
-  char *pch;
-  char *iface2;
-  /* Try to open /proc/net/ip_acct for reading. */
-  f = fopen("/proc/net/ip_acct", "r");
-  if (f == 0) {
-    /* Unable to open file. */
-    return READ_FOPEN_ERR;
-  }
-  /* Read the file into a buffer. */
-  num = fread(buf, 1, BUFSIZE - 1, f);
-  /* Check for read errors. */
-  if (ferror(f)) {
-    fclose(f);
-    return READ_FREAD_ERR;
-  }
-  /* Terminate the buffer with 0. */
-  buf[num] = 0;
-  /* Close the file. */
-  fclose(f);
-  /* Add a space to the `iface' string, so we can detect the difference
-     between e.g. "eth1" and "eth11" */
-  len = strlen(iface);
-  iface2 = alloca(len + 2);
-  if (iface2 == 0)
-    return READ_ALLOC_ERR;
-  strcpy(iface2, iface);
-  iface2[len] = ' ';
-  iface2[len + 1] = 0;
-  /* Set pointer to start of buffer. */
-  pch = &buf[0];
-  /* There should be two accounting rules for our interface. */
-  for (t = 0; t < 2; t++) {
-    unsigned int vtype, v1, v2;
-    /* Seek interface string. */
-    pch = strstr(pch, iface2);
-    if (pch == 0) {
-      /* Maybe the accounting rules are not installed? */
-      return READ_IFACE_ERR;
-    }
-    /* Skip interface string and space. */
-    pch += len + 1;
-    /* Scan for data. */
-    num = sscanf(pch, "%*u %x %*u %*u %u %u", &vtype, &v1, &v2);
-    if (num != 3) {
-      /* Error scanning the string. */
-      return READ_SCAN_ERR;
-    }
-    switch (vtype & (IP_FW_F_ACCTIN | IP_FW_F_ACCTOUT)) {
-    case IP_FW_F_ACCTIN:	/* v1 = in count, v2 = in bytes */
-      if (pcnt) {
-        pcnt->in = (float) v2;
-      }
-      break;
-    case IP_FW_F_ACCTOUT:	/* v1 = out count; v2 = out bytes */
-      if (pcnt) {
-        pcnt->out = (float) v2;
-      }
-      break;
-    default:
-      return READ_VTYPE_ERR;
-    }
-  }
-  return READ_BYTES;
-}
-
