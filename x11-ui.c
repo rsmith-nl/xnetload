@@ -1,4 +1,4 @@
-/* $Id: x11-ui.c,v 1.14 2001/06/02 10:51:32 rsmith Exp rsmith $
+/* $Id: x11-ui.c,v 1.15 2001/06/26 13:35:57 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,9 @@
  * 
  * --------------------------------------------------------------------
  * $Log: x11-ui.c,v $
+ * Revision 1.15  2001/06/26 13:35:57  rsmith
+ * Reformatted and enhanced the online help message.
+ *
  * Revision 1.14  2001/06/02 10:51:32  rsmith
  * Updated copyright date.
  *
@@ -137,6 +140,7 @@
 /* C library include files */
 #include <stdio.h>
 #include <time.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <math.h>
