@@ -1,18 +1,20 @@
-$Id$
+$Id: CHANGELOG,v 1.1 1999/12/27 23:05:37 rsmith Exp rsmith $
 
 Changes for xnetload
 --------------------
 
 version 1.7.0
-- added the -kb option
-- removed support for outdated ip-accounting.
+- Added the -kb option
+- Removed support for outdated ip-accounting.
 
 version 1.6.1
-- doubled the buffer for reading /proc/net/dev. Several people noted this bug.
-- fixed some small bugs.
+- Doubled the buffer for reading /proc/net/dev. Several people noted this bug.
+- Fixed some small bugs.
+- Converted revision control back to RCS.
 
 version 1.6.0
-Oops. forgot to write them down.
+- Added new options for setting the sample rate and average count.
+- The source code is now in CVS.
 
 version 1.5.1
 - Updated the program to use the new /proc/net/dev layout in the 2.1.9x
