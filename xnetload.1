@@ -1,14 +1,17 @@
-.\" $Id: xnetload.1,v 1.1 1999/05/09 16:41:08 rsmith Exp rsmith $
+.\" $Id: xnetload.1,v 1.2 1999/10/06 20:55:56 rsmith Exp rsmith $
 .\"
-.\" This is the manual page for version 1.6 of xnetload.
+.\" This is the manual page for version 1.7 of xnetload.
 .\"
 .\" $Log: xnetload.1,v $
+.\" Revision 1.2  1999/10/06 20:55:56  rsmith
+.\" Added -ni option.
+.\"
 .\" Revision 1.1  1999/05/09 16:41:08  rsmith
 .\" Initial revision
 .\"
 .\"
 .\"
-.TH XNETLOAD 1 "6 Oct 1999" "" ""
+.TH XNETLOAD 1 "1999-12-27" "version 1.7" ""
 
 .SH NAME
 xnetload \- Displays packet (or bytes) traffic and uptime for a
@@ -21,7 +24,7 @@ network connection in an X window.
 
 .SH DESCRIPTION
 
-This manual page documents version 1.6 of \fBxnetload\fP, a program that
+This manual page documents version 1.7 of \fBxnetload\fP, a program that
 displays the number of bytes (or packets) transmitted per second in
 and out of the system over a network connection, in an X window. If the
 interface it is assigned to monitor goes offline, xnetload terminates itself.
@@ -33,11 +36,10 @@ online in case of a dail-up connection.  The number of bytes is averaged
 over the last five samples by default. Also by default, the samples are
 taken and the screen is updated every second.
 
-This program requires the /proc filesystem. If you want to display bytes/s
-you'll need a 2.1.x kernel, a 2.2.x kernel or a 2.0.x kernel with
-IP-accounting support. Since the 2.2.x kernels support reading byte values
-directly, support for IP-accounting is no longer necessary and might be
-removed in a future version.
+This program requires the /proc filesystem. If you want to display (k)bytes/s
+you'll need a 2.1.x kernel or a 2.2.x kernel. As of this version, support
+for ip-accounting for 2.0.x kernels is dropped.
+
 
 .SH OPTIONS
 This program accepts the standard X Toolkit Intrinsics options (see X(1)).
@@ -55,10 +57,9 @@ xnetload as a dock applet.
 \fB-nocharts\fP or \fB-nc\fP
 This inhibits the display of packet traffic graphs.
 .TP
-\fB-ipacct\fP or \fB-ip\fP
-Read the relevant data from /proc/net/ip_acct.  IP accounting must be
-enabled in the kernel and the program must be running as root for this
-to work.  
+\fB-kilobytes\fP or \fB-kb\fP
+Display the chart/values as kilobytes. This doesn't work on a 2.0.x
+kernel, since there is no byte count in /proc/net/dev in those kernels.
 .TP
 \fB-u\fP \fIseconds\fP, \fB-update\fP  \fIseconds\fP
 Number of seconds between screen updates. The default is 1 second.
@@ -98,9 +99,9 @@ This is a boolean value that, if True, inhibits the display of the packet
 count graph. It defaults to \fBFalse\fP. Specifying the \fB-nc\fP option on
 the command-line sets this resource to True.
 .TP
-\fBipAcct\fP (class \fBIpAcct\fP)
-This boolean makes the program try to read data from the IP accounting file
-/proc/net/ip_acct. It defaults to \fBFalse\fP. Specifying the \fB-ip\fP
+\fBkilobytes\fP (class \fBKilobytes\fP)
+This boolean makes the program convert the values it reads to kilobytes.
+It defaults to \fBFalse\fP. Specifying the \fB-kb\fP
 option on the command-line sets this resource to True.
 .TP
 \fBupd\fP (class \fBUpd\fP)
@@ -110,7 +111,6 @@ command-line with the \fB-u\fP or \fB-update\fP option.
 \fBagv\fP (class \fBAvg\fP)
 The number of samples that is averaged. This resource can also be set on
 the command-line with the \fB-a\fP or \fB-average\fP option.
-
 
 .SH WIDGETS
 The widget tree for \fIxnetload\fP is as shown below. It shows the widget
@@ -137,8 +137,6 @@ set to True, the Label \fIinterface\fP is missing.
 
 .SH FILES
 .I /proc/net/dev 
-or 
-.I /proc/net/ip_acct
 -- network device statistics for Linux.
 
 .I XNetload
@@ -156,39 +154,16 @@ from this file. Make sure it exists and is readable. Try `cat
 /proc/net/dev'. If this returns the error `No such file or directory' you
 need to enable the /proc filesystem in the Linux kernel.
 .TP
-.B Could not open /proc/net/ip_acct
-Opening the /proc/net/ip_acct file failed. xnetload reads the data it
-displays from this file if the \fB-ip\fP switch was specified on the
-command line or if the \fBipAcct\fP resource was set. 
-Make sure /proc/net/ip_acct exists and is readable.  Try `cat
-/proc/net/ip_acct'. If this returns the error `No such file or directory'
-you need to enable the /proc filesystem and IP accounting in the Linux
-kernel. If no accounting rules are set, xnetload will set them.
-.TP
 .B Interface not found in /proc/net/dev
-.TP
-.B Interface not found in /proc/net/ip_acct
-The interface you've specified is not listed in /proc/net/dev or
-/proc/net/ip_acct resp. Try `cat /proc/net/dev' and see what interfaces are
+The interface you've specified is not listed in /proc/net/dev.
+Try `cat /proc/net/dev' and see what interfaces are
 listed. Maybe you misspelled the name?
 .TP
 .B Error scanning /proc/net/dev
-.TP
-.B Error scanning /proc/net/ip_acct
-There was an error scanning the counts from /proc/net/dev or
-/proc/net/ip_acct. There might have been a change in the format of these
+There was an error scanning the counts from /proc/net/dev.
+There might have been a change in the format of these
 files (especially in the development kernels).
 Please send the maintainer a listing of that file.
-.TP
-.B Must run as root to install ip_acct rules
-When using the \fB-ip\fP switch or setting the \fBipAcct\fP resource,
-xnetload must be run by root or be setuid root to be able to use
-IP accounting rules.
-.TP
-.B system() call for ipfwadm failed
-xnetload was unable to install the IP accounting rules used for
-bytes/s statistics.  Most likely, IP accounting has not been enabled in the
-currently running kernel.
 .TP
 .B Average count must be > 0
 You specified a negative number with the  \fB-a\fP or \fB-average\fP
@@ -208,7 +183,7 @@ X(1), proc(5), README file in source distribution.
 
 .SH BUGS
 It requires Linux, since it needs the /proc filesystem, 
-especially the /proc/net/dev or /proc/net/ip_acct files.
+especially the /proc/net/dev file.
 
 The format of the /proc/net/dev file has changed over time. Xnetload works
 with 2.0.32-36, 2.1.86+ and 2.2.x kernels. If you have a kernel that
@@ -222,12 +197,9 @@ overruns. I haven't been online on a stretch long enough to test this. :-)
 .nf
 xnetload was written and is maintained by 
 \fBRoland Smith <rsmith@xs4all.nl>\fP.
-Rik Hemsley spotted a bug with large packet counts.
-Tony Mancill contributed the IP accounting support.
-Raphael Wegmann submitted a patch for using xnetload 
-with IP-aliasing.
-Adrian Bridgett added support for the 2.1.xx kernels.
 .fi
+The latest version of this program is available at: 
+\fBhttp://www.xs4all.nl/~rsmith/software/\fP
 
 .SH LICENSE
 This program is free software; you can redistribute it and/or modify it
