@@ -1,8 +1,11 @@
-.\" $Id: xnetload.1,v 1.8 2001/04/21 07:29:32 rsmith Exp rsmith $
+.\" $Id: xnetload.1,v 1.9 2001/06/02 10:27:13 rsmith Exp rsmith $
 .\"
 .\" This is the manual page for version 1.11 of xnetload.
 .\"
 .\" $Log: xnetload.1,v $
+.\" Revision 1.9  2001/06/02 10:27:13  rsmith
+.\" Updated for release 1.11.
+.\"
 .\" Revision 1.8  2001/04/21 07:29:32  rsmith
 .\" Updated for 1.10
 .\"
@@ -31,7 +34,7 @@
 .\"
 .\"
 .\"
-.TH XNETLOAD 1 "2001-6-2" "version 1.11" ""
+.TH XNETLOAD 1 "2001-6-26" "version 1.11" ""
 
 .SH NAME
 xnetload \- Displays packet (or bytes) traffic and uptime for a
@@ -79,7 +82,7 @@ available for those wishing to use ip-accounting on a 2.0.x kernel.
 .SH OPTIONS
 This program accepts the standard X Toolkit Intrinsics options (see X(1)).
 
-It accepts the following  additional options:
+In addition, it accepts the following specific options:
 .TP
 \fB-?\fP or \fB-h\fP or \fB--help\fP or no arguments
 This prints a short help message.
@@ -122,7 +125,7 @@ Resets the counters to zero, if the interface has gone down, or the counter
 in the kernel has rolled over.
 
 .SH RESOURCES
-In addition to the resources available to the widget, xnetload also defines
+Next to the resources available to the widget, xnetload also defines
 the following custom application resources:
 .TP 
 \fBinterface\fP (class \fBInterface\fP)
