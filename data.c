@@ -1,4 +1,4 @@
-/* $Id$
+/* $Id: data.c,v 1.1 1999/05/09 16:39:26 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -27,7 +27,10 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
  * ------------------------------------------------------------------------
- * $Log$
+ * $Log: data.c,v $
+ * Revision 1.1  1999/05/09 16:39:26  rsmith
+ * Initial revision
+ *
  *
  *
  * Revision 1.6  1998/06/21 09:56:44  rsmith
@@ -62,7 +65,7 @@
 #include "data.h"
 
 /* size of buffer to copy /proc/net/xxx to */
-#define BUFSIZE 1024
+#define BUFSIZE 2048
 
 /********** Global variables **********/
 count_t average;		/* average count */
