@@ -1,4 +1,4 @@
-/* $Id: x11-ui.c,v 1.16 2001/07/13 18:06:11 rsmith Exp rsmith $
+/* $Id: x11-ui.c,v 1.17 2002/07/15 17:22:58 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,10 @@
  * 
  * --------------------------------------------------------------------
  * $Log: x11-ui.c,v $
+ * Revision 1.17  2002/07/15 17:22:58  rsmith
+ * Reformatted with 'indent -kr -i8'.
+ * Added structured comments.
+ *
  * Revision 1.16  2001/07/13 18:06:11  rsmith
  * #included stdlib.h for exit(3).
  *
@@ -460,7 +464,8 @@ int main(int argc, char *argv[])
 						 paned,
 						 XtNjumpScroll, 1, 
 						 XtNminScale, 1, 
-						 XtNupdate, 1, NULL);
+						 XtNupdate, appdata.update, 
+						 NULL);
 
 		XtAddCallback(str_in, XtNgetValue,
 			      (XtCallbackProc) get_in_value, NULL);
@@ -480,7 +485,7 @@ int main(int argc, char *argv[])
 						  paned,
 						  XtNjumpScroll, 1,
 						  XtNminScale, 1,
-						  XtNupdate, 1,
+						  XtNupdate, appdata.update,
 						  NULL);
 		XtAddCallback(str_out, XtNgetValue,
 			      (XtCallbackProc) get_out_value, NULL);
