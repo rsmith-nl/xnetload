@@ -1,8 +1,12 @@
-.\" $Id: xnetload.1,v 1.4 1999/12/30 10:31:56 rsmith Exp rsmith $
+.\" $Id: xnetload.1,v 1.5 2000/02/17 21:30:50 rsmith Exp rsmith $
 .\"
 .\" This is the manual page for version 1.7 of xnetload.
 .\"
 .\" $Log: xnetload.1,v $
+.\" Revision 1.5  2000/02/17 21:30:50  rsmith
+.\" Added the documentation for the -scale option by Paul Schilling
+.\" <pfschill@bigfoot.com>.
+.\"
 .\" Revision 1.4  1999/12/30 10:31:56  rsmith
 .\" Updated to 1.7.1b1
 .\"
@@ -17,7 +21,7 @@
 .\"
 .\"
 .\"
-.TH XNETLOAD 1 "2000-2-17" "version 1.8" ""
+.TH XNETLOAD 1 "2000-4-14" "version 1.8" ""
 
 .SH NAME
 xnetload \- Displays packet (or bytes) traffic and uptime for a
@@ -35,14 +39,27 @@ displays the number of bytes (or packets) transmitted per second in
 and out of the system over a network connection, in an X window. If the
 interface it is assigned to monitor goes offline, xnetload terminates itself.
 
-It can display both numbers and a graph.  the graph displays log10 of the
-numbers of bytes / packets by default, but it can also show the amount in
-kilobytes. The kilobytes value can be scaled by a command-line
-parameter. The program also shows the time elapsed and the total amount of
-data transferred since it was started. This is very useful to keep track of
-how long you've been online in case of a dail-up connection.  The number of
-bytes is averaged over the last five samples by default. Also by default,
-the samples are taken and the screen is updated every second.
+The first line of test displays the interface that this instance of
+xnetload is monitoring, and the amount of time that has passed since the
+program was started. This is very useful to keep track of how long you've
+been online in case of a dail-up connection.  Displaying this line can be
+turned off by using the \fB-ni\fP switch or setting the \fBnoInterface\fP
+resource to True.
+
+Next follow a line of text showing the incoming bytes. Three numbers are
+shown; the current value, the maximum value seen in this session (between
+()), and the amount of bytes received (between []). Showing this line can
+be turned off by using the \fB-nc\fP switch or setting the \fBnoCharts\fP
+resource to True. The number of bytes is averaged over the last five
+samples by default. Also by default, the samples are taken and the screen
+is updated every second.
+
+Below that is a graphical representation of the incoming stream. The graph
+displays log10 of the numbers of bytes by default, but it can also show the
+amount in kilobytes (by using the \fB-kb\fP switch). The kilobytes value
+can be scaled by a command-line parameter (\fB-s\fP \fIfactor\fP).
+
+The line of text and the graph are repeated for outgoing bytes.
 
 This program requires the /proc filesystem. If you want to display (k)bytes/s
 you'll need a 2.1.x kernel or a 2.2.x kernel. As of version 1.7.0, support
@@ -52,7 +69,10 @@ available for those wishing to use ip-accounting on a 2.0.x kernel.
 .SH OPTIONS
 This program accepts the standard X Toolkit Intrinsics options (see X(1)).
 
-It accepts the following options:
+It accepts the following  additional options:
+.TP
+\fB-?\fP or \fB-h\fP or \fB--help\fP or no arguments
+This prints a short help message.
 .TP
 \fB-novalues\fP or \fB-nv\fP
 This inhibits showing the traffic numbers.
