@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.3 2002/07/23 08:03:14 rsmith Exp rsmith $
+# $Id: Makefile,v 1.13 2002/07/23 08:16:01 rsmith Exp rsmith $
 # This is the Makefile for xnetload
 
 # If make complains about a missing file, run 'make depend' first
@@ -45,7 +45,7 @@ DISTFILES = README COPYING Makefile $(BASENAME).1
 SRCS = data.c x11-ui.c
 
 # Extra stuff to add into the distribution.
-XTRA_DIST= XNetload
+XTRA_DIST= XNetload Makefile.static
 
 ##### No editing necessary beyond this point
 # Object files.
