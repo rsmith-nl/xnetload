@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.1 2001/03/07 18:04:01 rsmith Exp rsmith $
+# $Id: Makefile,v 1.8 2001/06/02 10:21:04 rsmith Exp rsmith $
 # This is the Makefile for xnetload
 
 # If make complains about a missing file, run 'make depend' first
@@ -36,7 +36,7 @@ VMINOR   = 11
 VPATCH   = 0
 
 # Files that need to be included in the distribution
-DISTFILES = README COPYING Makefile $(BASENAME).1.gz
+DISTFILES = README COPYING Makefile $(BASENAME).1
 
 # Source files.
 SRCS = data.c x11-ui.c
@@ -74,13 +74,13 @@ $(BASENAME): $(OBJS)
 # compresses the manual page
 $(BASENAME).1.gz: $(BASENAME).1
 	cp $(BASENAME).1 $(BASENAME).1.org
-	gzip $(BASENAME).1
+	gzip -f $(BASENAME).1
 	mv $(BASENAME).1.org $(BASENAME).1
 
 # Remove all generated files.
 clean:;
 	rm -f $(OBJS) $(BASENAME) *~ core \
-	$(TARFILE) $(BACKUP) $(LOG)
+	$(TARFILE) $(BACKUP) $(LOG) $(BASENAME).1.gz
 
 log: $(LOG)
 
