@@ -1,0 +1,230 @@
+.\" $Id$
+.\"
+.\" This is the manual page for version 1.6 of xnetload.
+.\"
+.\" $Log$
+.\"
+.\"
+.TH XNETLOAD 1 "9 Feb 1999" "" ""
+
+.SH NAME
+xnetload \- Displays packet (or bytes) traffic and uptime for a
+network connection in an X window.
+
+.SH SYNOPSIS
+.B xnetload
+[Xt options] [other options]
+.I interface
+
+.SH DESCRIPTION
+
+This manual page documents version 1.6 of \fBxnetload\fP, a program that
+displays the number of bytes (or packets) transmitted per second in
+and out of the system over a network connection, in an X window. If the
+interface it is assigned to monitor goes offline, xnetload terminates itself.
+
+It can display both numbers and a graph.  the graph displays log10 of the
+numbers of bytes / packets. The program also shows the time elapsed since
+it was started. This is very useful to keep track of how long you've been
+online in case of a dail-up connection.  The number of bytes is averaged
+over the last five samples by default. Also by default, the samples are
+taken and the screen is updated every second.
+
+This program requires the /proc filesystem. If you want to display bytes/s
+you'll need a 2.1.x kernel, a 2.2.x kernel or a 2.0.x kernel with
+IP-accounting support. Since the 2.2.x kernels support reading byte values
+directly, support for IP-accounting is no longer necessary and might be
+removed in a future version.
+
+.SH OPTIONS
+This program accepts the standard X Toolkit Intrinsics options (see X(1)).
+
+It accepts the following options:
+.TP
+\fB-novalues\fP or \fB-nv\fP
+This inhibits showing the traffic numbers.
+.TP
+\fB-nocharts\fP or \fB-nc\fP
+This inhibits the display of packet traffic graphs.
+.TP
+\fB-ipacct\fP or \fB-ip\fP
+Read the relevant data from /proc/net/ip_acct.  IP accounting must be
+enabled in the kernel and the program must be running as root for this
+to work.  
+.TP
+\fB-u\fP \fIseconds\fP, \fB-update\fP  \fIseconds\fP
+Number of seconds between screen updates. The default is 1 second.
+.TP
+\fB-a\fP \fIcount\fP, \fB-average\fP  \fIcount\fP
+The number of samples that is averaged. The values and graphs show this
+average. The default value is 5 samples.
+.TP
+\fB-interface\fP \fIinterface\fP or \fB-if\fP \fIinterface\fP or \fIinterface\fP 
+The name of the network \fIinterface\fP to monitor, e.g.
+.B lo
+for the loopback device, or
+.B sl0
+for the first slip device.
+
+.SH RESOURCES
+In addition to the resources available to the widget, xnetload also defines
+the following custom application resources:
+.TP 
+\fBinterface\fP (class \fBInterface\fP)
+The name of the network interface to monitor. This is set by the
+command-line option \fB-if\fP.
+.TP
+\fBnoValues\fP (class \fBNoValues\fP) 
+This is a boolean value that, if True, inhibits the display of the packet
+count value. It defaults to \fBFalse\fP. This resource can be set to True
+on the command-line by specifying the \fB-nv\fP option.
+.TP
+\fBnoCharts\fP (class \fBNoCharts\fP) 
+This is a boolean value that, if True, inhibits the display of the packet
+count graph. It defaults to \fBFalse\fP. Specifying the \fB-nc\fP option on
+the command-line sets this resource to True.
+.TP
+\fBipAcct\fP (class \fBIpAcct\fP)
+This boolean makes the program try to read data from the IP accounting file
+/proc/net/ip_acct. It defaults to \fBFalse\fP. Specifying the \fB-ip\fP
+option on the command-line sets this resource to True.
+.TP
+\fBupd\fP (class \fBUpd\fP)
+Number of seconds between updates. This resource can also be set on the
+command-line with the \fB-u\fP or \fB-update\fP option.
+.TP
+\fBagv\fP (class \fBAvg\fP)
+The number of samples that is averaged. This resource can also be set on
+the command-line with the \fB-a\fP or \fB-average\fP option.
+
+
+.SH WIDGETS
+The widget tree for \fIxnetload\fP is as shown below. It shows the widget
+class name followed by the widget instance name.
+
+.nf
+XNetload xnetload
+   Paned paned
+       Label interface
+       Label in
+       StripChart str_in
+       Label out
+       StripChart str_out
+.fi
+
+If the \fB-nocharts\fP option is given, or the \fBnoCharts\fP resource is
+set to True, the StripCharts are missing. 
+
+If the \fB-novalues\fP option is given, or the \fBnoValues\fP resource is
+set to True, the Labels \fIin\fP and \fIout\fP are missing.
+
+.SH FILES
+.I /proc/net/dev 
+or 
+.I /proc/net/ip_acct
+-- network device statistics for Linux.
+
+.I XNetload
+-- application defaults file.
+
+.SH DIAGNOSTICS
+The following messages can be generated on the console:
+.TP
+.B No network interface specified
+The \fIinterface\fP argument on the command line was omitted.
+.TP
+.B Could not open /proc/net/dev
+Opening the /proc/net/dev file failed. xnetload reads the data it displays
+from this file. Make sure it exists and is readable. Try `cat
+/proc/net/dev'. If this returns the error `No such file or directory' you
+need to enable the /proc filesystem in the Linux kernel.
+.TP
+.B Could not open /proc/net/ip_acct
+Opening the /proc/net/ip_acct file failed. xnetload reads the data it
+displays from this file if the \fB-ip\fP switch was specified on the
+command line or if the \fBipAcct\fP resource was set. 
+Make sure /proc/net/ip_acct exists and is readable.  Try `cat
+/proc/net/ip_acct'. If this returns the error `No such file or directory'
+you need to enable the /proc filesystem and IP accounting in the Linux
+kernel. If no accounting rules are set, xnetload will set them.
+.TP
+.B Interface not found in /proc/net/dev
+.TP
+.B Interface not found in /proc/net/ip_acct
+The interface you've specified is not listed in /proc/net/dev or
+/proc/net/ip_acct resp. Try `cat /proc/net/dev' and see what interfaces are
+listed. Maybe you misspelled the name?
+.TP
+.B Error scanning /proc/net/dev
+.TP
+.B Error scanning /proc/net/ip_acct
+There was an error scanning the counts from /proc/net/dev or
+/proc/net/ip_acct. There might have been a change in the format of these
+files (especially in the development kernels).
+Please send the maintainer a listing of that file.
+.TP
+.B Must run as root to install ip_acct rules
+When using the \fB-ip\fP switch or setting the \fBipAcct\fP resource,
+xnetload must be run by root or be setuid root to be able to use
+IP accounting rules.
+.TP
+.B system() call for ipfwadm failed
+xnetload was unable to install the IP accounting rules used for
+bytes/s statistics.  Most likely, IP accounting has not been enabled in the
+currently running kernel.
+.TP
+.B Average count must be > 0
+You specified a negative number with the  \fB-a\fP or \fB-average\fP
+options, or the \fBavg\fP resource. This is not allowed.
+.TP
+.B Update time must be > 0
+You specified a negative number with the \fB-u\fP or \fB-update\fP 
+options, or the \fBupd\fP resource. This is not allowed.
+.TP
+.B Memory allocation error
+The program could not get the memory it needs to operate. Maybe you have
+specified a huge average count, or your system has very little memory
+and/or swap space. 
+
+.SH SEE ALSO
+X(1), proc(5), README file in source distribution.
+
+.SH BUGS
+It requires Linux, since it needs the /proc filesystem, 
+especially the /proc/net/dev or /proc/net/ip_acct files.
+
+The format of the /proc/net/dev file has changed over time. Xnetload works
+with 2.0.32-36, 2.1.86+ and 2.2.x kernels. If you have a kernel that
+does not work with xnetload, please send the maintainer a listing of your
+/proc/net/dev file, so the source can be updated.
+
+Something weird might happen if the packet counter, an  unsigned integer,
+overruns. I haven't been online on a stretch long enough to test this. :-)
+
+.SH AUTHOR
+.nf
+xnetload was written and is maintained by 
+\fBRoland Smith <rsmith@xs4all.nl>\fP.
+Rik Hemsley spotted a bug with large packet counts.
+Tony Mancill contributed the IP accounting support.
+Raphael Wegmann submitted a patch for using xnetload 
+with IP-aliasing.
+Adrian Bridgett added support for the 2.1.xx kernels.
+.fi
+
+.SH LICENSE
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2 of the License, or (at your option)
+any later version.
+
+This program is distributed in the hope that it will be useful but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc., 675
+Mass Ave, Cambridge, MA 02139, USA.
+
+
