@@ -1,8 +1,11 @@
-.\" $Id: xnetload.1,v 1.7 2000/09/26 19:56:52 rsmith Exp rsmith $
+.\" $Id: xnetload.1,v 1.8 2001/04/21 07:29:32 rsmith Exp rsmith $
 .\"
-.\" This is the manual page for version 1.10 of xnetload.
+.\" This is the manual page for version 1.11 of xnetload.
 .\"
 .\" $Log: xnetload.1,v $
+.\" Revision 1.8  2001/04/21 07:29:32  rsmith
+.\" Updated for 1.10
+.\"
 .\" Revision 1.7  2000/09/26 19:56:52  rsmith
 .\" Fixed a documentation bug. The option/resource for not showing the byte
 .\" counts is -nv/noValues, not -nv/noCharts!
@@ -28,7 +31,7 @@
 .\"
 .\"
 .\"
-.TH XNETLOAD 1 "2001-4-21" "version 1.10" ""
+.TH XNETLOAD 1 "2001-6-2" "version 1.11" ""
 
 .SH NAME
 xnetload \- Displays packet (or bytes) traffic and uptime for a
@@ -41,7 +44,7 @@ network connection in an X window.
 
 .SH DESCRIPTION
 
-This manual page documents version 1.10 of \fBxnetload\fP, a program that
+This manual page documents version 1.11 of \fBxnetload\fP, a program that
 displays the number of bytes (or packets) transmitted per second in
 and out of the system over a network connection, in an X window. If the
 interface it is assigned to monitor goes offline, xnetload terminates itself.
@@ -218,6 +221,10 @@ There might have been a change in the format of these
 files (especially in the development kernels).
 Please send the maintainer a listing of that file.
 .TP
+.B Not enough memory to read /proc/net/dev
+The program couldn't allocate enough memory to contain the whole
+/proc/net/dev file.
+.TP
 .B Average count must be > 0
 You specified a negative number with the  \fB-a\fP or \fB-average\fP
 options, or the \fBavg\fP resource. This is not allowed.
@@ -246,6 +253,10 @@ The format of the /proc/net/dev file has changed over time. Xnetload works
 with 2.0.32+, 2.2.x and 2.4.x kernels. If you have a kernel that
 does not work with xnetload, please send the maintainer a listing of your
 /proc/net/dev file, so the source can be updated.
+
+Previous versions relied on a fixed buffer to read /proc/net/dev. This
+sometimes caused problems for people with lots of network connections. As
+of 1.11, the required memory is allocated dynamically.
 
 .SH AUTHOR
 .nf
