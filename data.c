@@ -1,9 +1,9 @@
-/* $Id: data.c,v 1.6 2000/02/22 18:09:25 rsmith Exp $
+/* $Id: data.c,v 1.7 2000/04/14 19:34:04 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
  *
- * Copyright (C) 1997 - 1999  R.F. Smith <rsmith@xs4all.nl>
+ * Copyright (C) 1997 - 2000  R.F. Smith <rsmith@xs4all.nl>
  *
  * You can contact the author at the following address:
  *      email: rsmith@xs4all.nl
@@ -28,6 +28,9 @@
  * 
  * ------------------------------------------------------------------------
  * $Log: data.c,v $
+ * Revision 1.7  2000/04/14 19:34:04  rsmith
+ * Fixed overflow diff count bug pointed out by Adrian Bridgett
+ *
  * Revision 1.6  2000/02/22 18:09:25  rsmith
  * Changed the calculation of the `total' count.
  *

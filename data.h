@@ -1,9 +1,9 @@
-/*  $Id: data.h,v 1.4 2000/01/01 21:26:37 rsmith Exp rsmith $
+/*  $Id: data.h,v 1.5 2000/02/22 17:41:29 rsmith Exp rsmith $
  * --------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
  *
- * Copyright (C) 1997, 1999  R.F. Smith <rsmith@xs4all.nl>
+ * Copyright (C) 1997 - 2000  R.F. Smith <rsmith@xs4all.nl>
  *
  * You can contact the author at the following address:
  *      email: rsmith@xs4all.nl
@@ -28,6 +28,10 @@
  * 
  * --------------------------------------------------------------------
  * $Log: data.h,v $
+ * Revision 1.5  2000/02/22 17:41:29  rsmith
+ * Added `total' count. Patch provided by
+ * Paul Schilling <pfschill@bigfoot.com>.
+ *
  * Revision 1.4  2000/01/01 21:26:37  rsmith
  * Release 1.7.1b3
  *

@@ -1,9 +1,9 @@
-/* $Id: x11-ui.c,v 1.7 2000/02/22 17:51:56 rsmith Exp $
+/* $Id: x11-ui.c,v 1.8 2000/04/14 19:36:20 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
  *
- * Copyright (C) 1997 - 1999  R.F. Smith <rsmith@xs4all.nl>
+ * Copyright (C) 1997 - 2000  R.F. Smith <rsmith@xs4all.nl>
  *
  * You can contact the author at the following address:
  *      email: rsmith@xs4all.nl
@@ -28,6 +28,11 @@
  * 
  * --------------------------------------------------------------------
  * $Log: x11-ui.c,v $
+ * Revision 1.8  2000/04/14 19:36:20  rsmith
+ * Added -h, -? and --help switches.
+ * Shortened the values strings.
+ * Shortened the interface string.
+ *
  * Revision 1.7  2000/02/22 17:51:56  rsmith
  * Updated fallback resources for greater width.
  *
