@@ -1,96 +1,101 @@
-# Makefile for xnetload
-#
-# $Id: Makefile,v 1.6 2000/09/26 19:48:55 rsmith Exp rsmith $
-#
+# $Id: Makefile,v 1.1 2001/03/07 18:04:01 rsmith Exp rsmith $
+# This is the Makefile for xnetload
 
-# Location to install the binary.
-BINDIR = /usr/local/bin
+# If make complains about a missing file, run 'make depend' first
 
-# Location to install the manual-page.
-MANDIR = /usr/local/man/man1
-
-# Location of the X11 header files. Try changing this if compilation fails due
-# to missing include files.
-HDIRS = -I/usr/X11R6/include
-# Location of the X11 libraries. Try changing this if linking fails due to
-# missing libraries. 
-LDIRS = -L/usr/X11R6/lib
-
-# Compilation flags.
-# For gcc 2.95, optimized
-#CFLAGS = -pipe -Wall -O3 -mcpu=pentium -ffast-math -fomit-frame-pointer -DNDEBUG
-# For gcc 2.7.x
-#CFLAGS = -O2 -Wall -pipe -fomit-frame-pointer -DNDEBUG
-# For debugging
-CFLAGS = -g -Wall
-
-# Linking flags
-#LFLAGS = -pipe -Wall -s
-# Linking flags for debugging
-LFLAGS = -pipe -Wall
-
-# The compiler to use.
+# Define the C compiler to be used, usually gcc.
 CC = gcc
 
-#### You should not have to make changes beyond this point. ####
+# The next two lines are for building an executable suitable for debugging.
+CFLAGS = -pipe -g -O0 -Wall
+LFLAGS = -pipe -Wall
 
+# The next two lines are for building an optimized program.
+#CFLAGS = -pipe -O2 -Wall -DNDEBUG
+#LFLAGS = -s -pipe -Wall
+
+# These two lines are for building Athlon optimized programs.
+#CFLAGS = -s -O3 -fomit-frame-pointer -Wall -mpentiumpro -march=pentiumpro -malign-functions=4 -funroll-loops -fexpensive-optimizations -malign-double -fschedule-insns2 -mwide-multiply -DNDEBUG
+#LFLAGS = -s -pipe -Wall
+
+# Libraries to link against
 LIBS = -lXaw -lXmu -lXt -lX11 -lm
 
-# Package name and version: BASENAME-VMAJOR.VMINOR.tar.gz
+# Location where to install the binary.
+BINDIR = /usr/local/bin
+
+# Location where to install the manual-page.
+MANDIR = /usr/local/man/man1
+
+##### Maintainer stuff goes here:
+
+# Package name and version: BASENAME-VMAJOR.VMINOR.VPATCH.tar.gz
 BASENAME = xnetload
 VMAJOR   = 1
-VMINOR   = 10
+VMINOR   = 11
 VPATCH   = 0
 
-# Directory in which this library is built
-BUILDDIR = $(BASENAME)-$(VMAJOR).$(VMINOR)
+# Files that need to be included in the distribution
+DISTFILES = README COPYING Makefile $(BASENAME).1.gz
 
-LOG = CHANGELOG
+# Source files.
+SRCS = data.c x11-ui.c
 
-# If one of these is missing, comment them out!
-README  = $(BUILDDIR)/README
-CHLOG  = $(BUILDDIR)/$(LOG)
-LICENSE = $(BUILDDIR)/LICENSE
-MANPAGE = $(BUILDDIR)/$(BASENAME).1
-APPDEF  = $(BUILDDIR)/XNetload
-EXTRAS = $(README) $(CHLOG)  $(LICENSE)  $(MANPAGE)  $(APPDEF) 
+# Extra stuff to add into the distribution.
+XTRA_DIST= XNetload
 
-# Predefined file names
+##### No editing necessary beyond this point
+# Object files.
+OBJS = $(SRCS:.c=.o)
+
+# Predefined directory/file names
+PKGDIR  = $(BASENAME)-$(VMAJOR).$(VMINOR).$(VPATCH)
 TARFILE = $(BASENAME)-$(VMAJOR).$(VMINOR).$(VPATCH).tar.gz
 BACKUP  = $(BASENAME)-backup-$(VMAJOR).$(VMINOR).$(VPATCH).tar.gz
 
 # Version number
 VERSION = -DVERSION=\"$(VMAJOR).$(VMINOR).$(VPATCH)\"
-# Construct CFLAGS
-CXFLAGS = $(CFLAGS) $(VERSION)
+# Program name
+PACKAGE = -DPACKAGE=\"$(BASENAME)\"
+# Add to CFLAGS
+CFLAGS += $(VERSION) $(PACKAGE)
 
-# Object files.
-OBJS = data.o x11-ui.o
+LOG = ChangeLog
+DISTFILES += $(LOG)
 
-##### No editing necessary beyond this point
-.PHONY: clean install uninstall dist backup
+.PHONY: clean install uninstall dist backup all $(LOG)
+
+all: $(BASENAME)
 
 # builds a binary.
 $(BASENAME): $(OBJS)
-	$(CC) $(LFLAGS) $(LDIRS) -o $(BASENAME) $(LIBS) $(OBJS)
+	$(CC) $(LFLAGS) $(LDIRS) -o $(BASENAME) $(OBJS) $(LIBS)
+
+# compresses the manual page
+$(BASENAME).1.gz: $(BASENAME).1
+	cp $(BASENAME).1 $(BASENAME).1.org
+	gzip $(BASENAME).1
+	mv $(BASENAME).1.org $(BASENAME).1
 
 # Remove all generated files.
 clean:;
 	rm -f $(OBJS) $(BASENAME) *~ core \
 	$(TARFILE) $(BACKUP) $(LOG)
 
-log:;
+log: $(LOG)
+
+$(LOG):;
 	rm -f $(LOG) 
 	rcs2log -i 2 -l 70 >$(LOG)
 
 # Install the program and manual page. You should be root to do this.
-install: $(BASENAME)
+install: $(BASENAME) $(BASENAME).1.gz
 	@if [ `id -u` != 0 ]; then \
 		echo "You must be root to install the program!"; \
 		exit 1; \
 	fi
 	cp $(BASENAME) $(BINDIR)
-	cp $(BASENAME).1 $(MANDIR)
+	cp $(BASENAME).1.gz $(MANDIR)
 
 uninstall:;
 	@if [ `id -u` != 0 ]; then \
@@ -98,26 +103,33 @@ uninstall:;
 		exit 1; \
 	fi
 	rm -f $(BINDIR)/$(BASENAME)
-	rm -f $(MANDIR)/$(BASENAME).1
+	rm -f $(MANDIR)/$(BASENAME).1*
 
 # Build a tar distribution file. Only needed for the maintainer.
-dist: log
-	cd .. ; tar -czf $(BUILDDIR)/$(TARFILE) $(EXTRAS) \
-	$(BUILDDIR)/Makefile $(BUILDDIR)/depend \
-	$(BUILDDIR)/*.h $(BUILDDIR)/*.c 
+dist: $(DISTFILES) $(XTRA_DIST)
+	rm -rf $(PKGDIR)
+	mkdir -p $(PKGDIR)
+	cp $(DISTFILES) $(XTRA_DIST) $(SRCS) *.h $(PKGDIR)
+	tar -czf $(TARFILE) $(PKGDIR)
+	rm -rf $(PKGDIR)
+
 
 # Make a backup, complete with the RCS files. Only for the maintainer.
-backup: clean
-	cd .. ; \
-	tar -czf $(BUILDDIR)/$(BACKUP) $(BUILDDIR)/*
+backup: clean $(LOG)
+	rm -rf /tmp/$(PKGDIR)
+	mkdir -p /tmp/$(PKGDIR)
+	cp -R -p * /tmp/$(PKGDIR)
+	CURDIR=`pwd`
+	cd /tmp ; tar -czf $(CURDIR)/$(BACKUP) $(PKGDIR)
+	rm -rf /tmp/$(PKGDIR)
 
 # if the file depend doesn't exist, run 'make depend' first.
-depend: $(OBJS:.o=.c)
+depend:
 	gcc -MM $(OBJS:.o=.c) >depend
 
-# implicit rule (is needed because of HDIRS and CXFLAGS!)
+# implicit rule (is needed because of HDIRS!)
 .c.o:
-	$(CC) $(CXFLAGS) $(CPPFLAGS) $(HDIRS) -c -o $@ $<
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(HDIRS) -c -o $@ $<
 
-# DO NOT DELETE THIS FOLLOWING LINE 
+# DO NOT DELETE THIS LINE 
 include depend
