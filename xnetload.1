@@ -1,8 +1,11 @@
-.\" $Id: xnetload.1,v 1.2 1999/10/06 20:55:56 rsmith Exp rsmith $
+.\" $Id: xnetload.1,v 1.3 1999/12/27 22:36:46 rsmith Exp rsmith $
 .\"
 .\" This is the manual page for version 1.7 of xnetload.
 .\"
 .\" $Log: xnetload.1,v $
+.\" Revision 1.3  1999/12/27 22:36:46  rsmith
+.\" Updated for 1.7
+.\"
 .\" Revision 1.2  1999/10/06 20:55:56  rsmith
 .\" Added -ni option.
 .\"
@@ -37,7 +40,7 @@ over the last five samples by default. Also by default, the samples are
 taken and the screen is updated every second.
 
 This program requires the /proc filesystem. If you want to display (k)bytes/s
-you'll need a 2.1.x kernel or a 2.2.x kernel. As of this version, support
+you'll need a 2.1.x kernel or a 2.2.x kernel. As of version 1.7.0, support
 for ip-accounting for 2.0.x kernels is dropped.
 
 
@@ -189,9 +192,6 @@ The format of the /proc/net/dev file has changed over time. Xnetload works
 with 2.0.32-36, 2.1.86+ and 2.2.x kernels. If you have a kernel that
 does not work with xnetload, please send the maintainer a listing of your
 /proc/net/dev file, so the source can be updated.
-
-Something weird might happen if the packet counter, an  unsigned integer,
-overruns. I haven't been online on a stretch long enough to test this. :-)
 
 .SH AUTHOR
 .nf
