@@ -1,4 +1,4 @@
-/* $Id: x11-ui.c,v 1.10 2000/06/07 16:49:04 rsmith Exp rsmith $
+/* $Id: x11-ui.c,v 1.11 2000/09/26 19:50:31 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,9 @@
  * 
  * --------------------------------------------------------------------
  * $Log: x11-ui.c,v $
+ * Revision 1.11  2000/09/26 19:50:31  rsmith
+ * Merged value-prefix patch from Jesper Dahlberg <jesper@swing.campus.luth.se>.
+ *
  * Revision 1.10  2000/06/07 16:49:04  rsmith
  * Fixed bug in get_out_value. Fix contributed by
  * Jesper Dahlberg <jesper@swing.campus.luth.se>
@@ -182,7 +185,7 @@ static char *out_str = 0;
  * Definition of the prefixes.  A thousand exa bytes will be
  * a sufficient upper limit for quite a few years.  ;-)
  */
-static char *prefix[] = {"", "K", "M", "G", "T", "P", "E"};
+static char *prefix[] = {"", "k", "M", "G", "T", "P", "E"};
 
 struct prefixed_value {
   float value;
