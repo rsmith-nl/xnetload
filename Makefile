@@ -1,6 +1,6 @@
 # Makefile for xnetload
 #
-# $Id: Makefile,v 1.2 1999/10/06 20:56:58 rsmith Exp rsmith $
+# $Id: Makefile,v 1.3 1999/12/27 23:14:30 rsmith Exp rsmith $
 #
 
 # Location to install the binary.
@@ -40,15 +40,17 @@ LIBS = -lXaw -lXmu -lXt -lX11 -lm
 # Package name and version: BASENAME-VMAJOR.VMINOR.tar.gz
 BASENAME = xnetload
 VMAJOR   = 1
-VMINOR   = 7
+VMINOR   = 8
 VPATCH   = 0
 
 # Directory in which this library is built
 BUILDDIR = $(BASENAME)-$(VMAJOR).$(VMINOR)
 
+LOG = CHANGELOG
+
 # If one of these is missing, comment them out!
 README  = $(BUILDDIR)/README
-CHLOG  = $(BUILDDIR)/CHANGELOG
+CHLOG  = $(BUILDDIR)/$(LOG)
 LICENSE = $(BUILDDIR)/LICENSE
 MANPAGE = $(BUILDDIR)/$(BASENAME).1
 APPDEF  = $(BUILDDIR)/XNetload
@@ -76,7 +78,11 @@ $(BASENAME): $(OBJS)
 # Remove all generated files.
 clean:;
 	rm -f $(OBJS) $(BASENAME) *~ core \
-	$(TARFILE) $(BACKUP) 
+	$(TARFILE) $(BACKUP) $(LOG)
+
+log:;
+	rm -f $(LOG) 
+	rcs2log -i 2 -l 70 >$(LOG)
 
 # Install the program and manual page. You should be root to do this.
 install: $(BASENAME)
@@ -96,7 +102,7 @@ uninstall:;
 	rm -f $(MANDIR)/$(BASENAME).1
 
 # Build a tar distribution file. Only needed for the maintainer.
-dist:;
+dist: log
 	cd .. ; tar -czf $(BUILDDIR)/$(TARFILE) $(EXTRAS) \
 	$(BUILDDIR)/Makefile $(BUILDDIR)/depend \
 	$(BUILDDIR)/*.h $(BUILDDIR)/*.c 
