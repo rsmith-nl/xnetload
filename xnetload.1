@@ -1,8 +1,11 @@
-.\" $Id: xnetload.1,v 1.3 1999/12/27 22:36:46 rsmith Exp rsmith $
+.\" $Id: xnetload.1,v 1.4 1999/12/30 10:31:56 rsmith Exp rsmith $
 .\"
 .\" This is the manual page for version 1.7 of xnetload.
 .\"
 .\" $Log: xnetload.1,v $
+.\" Revision 1.4  1999/12/30 10:31:56  rsmith
+.\" Updated to 1.7.1b1
+.\"
 .\" Revision 1.3  1999/12/27 22:36:46  rsmith
 .\" Updated for 1.7
 .\"
@@ -14,7 +17,7 @@
 .\"
 .\"
 .\"
-.TH XNETLOAD 1 "1999-12-27" "version 1.7" ""
+.TH XNETLOAD 1 "2000-2-17" "version 1.8" ""
 
 .SH NAME
 xnetload \- Displays packet (or bytes) traffic and uptime for a
@@ -27,22 +30,24 @@ network connection in an X window.
 
 .SH DESCRIPTION
 
-This manual page documents version 1.7 of \fBxnetload\fP, a program that
+This manual page documents version 1.8 of \fBxnetload\fP, a program that
 displays the number of bytes (or packets) transmitted per second in
 and out of the system over a network connection, in an X window. If the
 interface it is assigned to monitor goes offline, xnetload terminates itself.
 
 It can display both numbers and a graph.  the graph displays log10 of the
-numbers of bytes / packets. The program also shows the time elapsed since
-it was started. This is very useful to keep track of how long you've been
-online in case of a dail-up connection.  The number of bytes is averaged
-over the last five samples by default. Also by default, the samples are
-taken and the screen is updated every second.
+numbers of bytes / packets by default, but it can also show the amount in
+kilobytes. The kilobytes value can be scaled by a command-line
+parameter. The program also shows the time elapsed and the total amount of
+data transferred since it was started. This is very useful to keep track of
+how long you've been online in case of a dail-up connection.  The number of
+bytes is averaged over the last five samples by default. Also by default,
+the samples are taken and the screen is updated every second.
 
 This program requires the /proc filesystem. If you want to display (k)bytes/s
 you'll need a 2.1.x kernel or a 2.2.x kernel. As of version 1.7.0, support
-for ip-accounting for 2.0.x kernels is dropped.
-
+for ip-accounting for 2.0.x kernels is dropped. Version 1.6.1 is still
+available for those wishing to use ip-accounting on a 2.0.x kernel.
 
 .SH OPTIONS
 This program accepts the standard X Toolkit Intrinsics options (see X(1)).
@@ -64,10 +69,14 @@ This inhibits the display of packet traffic graphs.
 Display the chart/values as kilobytes. This doesn't work on a 2.0.x
 kernel, since there is no byte count in /proc/net/dev in those kernels.
 .TP
+\fB-scale\fP \fIfactor\fP or \fB-s\fP \fIfactor\fP
+Scales the kilobytes display by a given value, which must be > 1. Used in
+combination with \fB-kilobytes\fP or \fB-kb\fP.
+.TP
 \fB-u\fP \fIseconds\fP, \fB-update\fP  \fIseconds\fP
 Number of seconds between screen updates. The default is 1 second.
 .TP
-\fB-a\fP \fIcount\fP, \fB-average\fP  \fIcount\fP
+\fB-a\fP \fIcount\fP or \fB-average\fP  \fIcount\fP
 The number of samples that is averaged. The values and graphs show this
 average. The default value is 5 samples.
 .TP
@@ -106,6 +115,11 @@ the command-line sets this resource to True.
 This boolean makes the program convert the values it reads to kilobytes.
 It defaults to \fBFalse\fP. Specifying the \fB-kb\fP
 option on the command-line sets this resource to True.
+.TP
+\fBscale\fP (class \fBScale\fP)
+This value makes the program scale the graph by the given amount, if the
+graph is showing kilobytes. This resource can also be specified on the
+command-line via the \fB-s\fP option.
 .TP
 \fBupd\fP (class \fBUpd\fP)
 Number of seconds between updates. This resource can also be set on the
@@ -171,6 +185,10 @@ Please send the maintainer a listing of that file.
 .B Average count must be > 0
 You specified a negative number with the  \fB-a\fP or \fB-average\fP
 options, or the \fBavg\fP resource. This is not allowed.
+.TP
+.B Scale must be > 1
+You specified a small or negative number with the  \fB-s\fP or \fB-scale\fP
+options, or the \fBscale\fP resource. This is not allowed.
 .TP
 .B Update time must be > 0
 You specified a negative number with the \fB-u\fP or \fB-update\fP 
