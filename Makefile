@@ -1,25 +1,26 @@
-# $Id: Makefile,v 1.10 2001/06/26 13:27:15 rsmith Exp rsmith $
+# $Id$
 # This is the Makefile for xnetload
 
 # If make complains about a missing file, run 'make depend' first
 
 # Define the C compiler to be used, usually gcc.
 CC = gcc
+#CC = gcc-3.1
 
 # The next two lines are for building an executable suitable for debugging.
-CFLAGS = -pipe -g -O0 -Wall -I/usr/X11R6/include
-LFLAGS = -pipe -Wall -L/usr/X11R6/lib
+#CFLAGS = -pipe -g -O0 -Wall -I/usr/X11R6/include
+#LFLAGS = -pipe -Wall -L/usr/X11R6/lib
 
 # The next two lines are for building an optimized program.
-#CFLAGS = -pipe -O2 -Wall -DNDEBUG
-#LFLAGS = -s -pipe -Wall
+CFLAGS = -pipe -O2 -Wall -DNDEBUG -I/usr/X11R6/include
+LFLAGS = -s -pipe -Wall -L/usr/X11R6/lib
 
-# These two lines are for building Athlon optimized programs.
-#CFLAGS = -s -O3 -fomit-frame-pointer -Wall -mpentiumpro -march=pentiumpro -malign-functions=4 -funroll-loops -fexpensive-optimizations -malign-double -fschedule-insns2 -mwide-multiply -DNDEBUG
+# These two lines are for building Athlon optimized programs with gcc-3.1.
+#CFLAGS = -s -O3 -fomit-frame-pointer -Wall -march=athlon -funroll-loops -fexpensive-optimizations -fschedule-insns2 -DNDEBUG
 #LFLAGS = -s -pipe -Wall
 
 # Libraries to link against
-LIBS = -lXaw -lXmu -lXt -lX11 -lm
+LIBS =  -lXaw -lXmu -lXt -lX11 -lm
 
 # Location where to install the binary.
 BINDIR = /usr/local/bin
@@ -33,7 +34,7 @@ MANDIR = /usr/local/man/man1
 BASENAME = xnetload
 VMAJOR   = 1
 VMINOR   = 11
-VPATCH   = 1
+VPATCH   = 2
 
 # Files that need to be included in the distribution
 DISTFILES = README COPYING Makefile $(BASENAME).1
