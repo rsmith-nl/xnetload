@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.9 2001/04/18 17:43:54 rsmith Exp rsmith $
+/* $Id: data.c,v 1.10 2001/04/21 07:33:03 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,12 @@
  * 
  * ------------------------------------------------------------------------
  * $Log: data.c,v $
+ * Revision 1.10  2001/04/21 07:33:03  rsmith
+ * Forgotten credits:
+ * Zeroonreset patch by William Burrow <aa126@fan.nb.ca>
+ * Bug in detecting interfaces discovered by Sietse Visser
+ * <sietse.visser@sysman.nl>
+ *
  * Revision 1.9  2001/04/18 17:43:54  rsmith
  * ZeroOnRequest added to update_avg.
  * Added a function to search for the exact interface name.
@@ -92,8 +98,21 @@
 #include <unistd.h>
 #include "data.h"
 
-/* size of buffer to copy /proc/net/xxx to */
-#define BUFSIZE 2048
+/* initial size of buffer to copy /proc/net/xxx to */
+#define BUFSIZE 1024
+
+#ifndef NULL
+#define NULL (void*)0
+#endif
+
+#ifndef NDEBUG
+/* __FUNCTION__ is a GCC feature. */
+#undef debug
+#define debug(TXT) fprintf(stderr,"%s %s(): %s\n",__FILE__,__FUNCTION__,TXT)
+#else
+#undef debug
+#define debug(TXT) (void)0
+#endif /* NDEBUG */
 
 /********** Global variables **********/
 int type = 0;			/* What kind of data is gathered */
@@ -111,7 +130,7 @@ static int numavg;         /* number of samples to average */
 /********** Function definitions **********/
 
 /* return values for read_*  */
-#define READ_ALLOC_ERR    -5	/* Not enough memory on the stack */
+#define READ_MEM_ERR      -6	/* Not enough memory on the heap */
 #define READ_FOPEN_ERR    -4	/* Can't open file */
 #define READ_FREAD_ERR    -3	/* Can't read file */
 #define READ_IFACE_ERR    -2	/* Interface not found */
@@ -133,7 +152,7 @@ static int read_dev(count_t * pcnt, char *iface);
 
 void report_error(char *msg)
 {
-  assert (msg!=0);
+  assert (msg != NULL);
   /* cleanup for ip_acct */
   cleanup();
   /* Open connection to system logfile. */
@@ -152,7 +171,7 @@ int initialize(char *iface, int num_avg/*  , int kb */)
 {
   int r;
 
-  assert (iface!=0);
+  assert (iface != NULL);
   assert (num_avg > 0);
   
   /* Initialize global variables. */
@@ -175,6 +194,9 @@ int initialize(char *iface, int num_avg/*  , int kb */)
 
   r = read_dev(&last, iface);
   switch (r) {
+  case READ_MEM_ERR:
+    report_error("Not enough memory to read /proc/net/dev");
+    break;
   case READ_FOPEN_ERR:
     report_error("Could not open /proc/net/dev");
     break;
@@ -210,11 +232,9 @@ void update_avg(int seconds, int zeroOnReset )
   int i;
   static int index;
 
-  assert (seconds > 0);
+  if (seconds < 0)
+    seconds = -seconds;
 
-  /* Quit if invalid number of seconds is given */
-/*    if (seconds <= 0) */
-/*      return; */
   /* Read the data. */
   i = read_dev(&current, iface_name);
   switch (i) {
@@ -223,6 +243,9 @@ void update_avg(int seconds, int zeroOnReset )
     break;
   case READ_IFACE_ERR:
     exit(0);
+    break;
+  case READ_MEM_ERR:
+    report_error("Not enough memory to read /proc/net/dev");
     break;
   case READ_SCAN_ERR:
     report_error("Error scanning /proc/net/dev");
@@ -290,15 +313,17 @@ char *afterstr(char *haystack, const char *needle)
   char *pch;
   char *ptr = haystack;
 
-  assert (haystack != 0);
-  assert (needle != 0);
+  assert (haystack != NULL);
+  assert (needle != NULL);
 
   do {
     pch = strstr (ptr, needle);
     if (pch) {
       /* Check for leading whitespace, if not begin of */
       if (pch != haystack && isspace((int)(*(pch-1))) == 0) {
-          continue;
+        pch += strlen (needle);
+        ptr = pch;
+        continue;
       }
       /* Check for closing ':' */
       pch += strlen (needle);
@@ -316,13 +341,23 @@ char *afterstr(char *haystack, const char *needle)
 int read_dev(count_t *pcnt, char *iface)
 {
   FILE *f;
-  char buf[BUFSIZE];
+  static int bufsize = BUFSIZE;
+/*    char buf[BUFSIZE]; */
+  static char *buf = 0;
+  char *newbuf;
   int num, retval;
   char *pch;
   unsigned long int values[16];
 
-  assert (pcnt != 0);
-  assert (iface != 0);
+  assert (pcnt != NULL);
+  assert (iface != NULL);
+
+  /* create buffer if it doesn't exist */
+  if (buf == 0) {
+    buf = malloc (bufsize);
+    if (buf == 0)
+      return READ_MEM_ERR;
+  }  
 
   /* Try to open /proc/net/dev for reading. */
   f = fopen("/proc/net/dev", "r");
@@ -331,33 +366,46 @@ int read_dev(count_t *pcnt, char *iface)
     return READ_FOPEN_ERR;
   } 
   /* Read the file into a buffer. */
-  num = fread(buf, 1, BUFSIZE - 1, f);
-  /* Check for read errors. */
-  if (ferror(f)) {
+ read_again:
+  num = fread(buf, 1, bufsize - 1, f);
+  if (ferror(f)) {      /* check for read errors */
     fclose(f);
     return READ_FREAD_ERR;
+  } else if (!feof(f)) {    /* check if we need a larger buffer */
+    bufsize *= 2;
+    newbuf = realloc(buf, bufsize);
+    if (newbuf == 0) {
+      bufsize /= 2;
+      fclose(f);
+      return READ_MEM_ERR;
+    }
+    buf = newbuf;
+    rewind (f);
+    debug ("buffer enlarged, read again");
+    goto read_again;
+  } else if (num < bufsize/2-1) {
+    newbuf = realloc(buf, bufsize/2);
+    if (newbuf) {
+      buf = newbuf;
+      bufsize /= 2;
+    } 
   }
+
   /* Terminate the buffer with 0. */
   buf[num] = 0;
   /* Close the file. */
   fclose(f);
 
   /* Seek the interface we're looking for. */
-/*    pch = strstr(buf, iface); */
   pch = afterstr(buf, iface);
   if (pch == 0) {
     /* Interface not found. */
     return READ_IFACE_ERR;
   }
-  /* Skip the interface name. */
-/*    pch += strlen(iface); */
-  /* Skip the ":" after the interface name. */
-/*    pch++; */
-
   /* There are different layouts for /proc/net/dev:
    * there are several fields for received and transmitted bytes
-   * on 2.0.32:          on 2.1.>90            on 2.1.<90
-   *              RECEIVE  (and 2.2.x)        
+   * on 2.0.32:            on 2.1.>90         on 2.1.<90
+   *              RECEIVE  (and 2.2.x, 2.4.x)        
    *  > 1 packets         >  1 bytes          > 1 bytes
    *    2 errs               2 packets          2 packets
    *    3 drop               3 errs             3 errs
@@ -397,7 +445,7 @@ int read_dev(count_t *pcnt, char *iface)
       pcnt->out = (float) values[6];
     }
     break;
-  case 16:			/* 2.1.90+ kernel, can read byte counts. */
+  case 16:			/* 2.1.90+, 2.2.x or 2.4.x kernel, can read byte counts. */
     retval = READ_BYTES;
     if (pcnt) {
       pcnt->in = (float) values[0];
