@@ -1,4 +1,4 @@
-/* $Id: x11-ui.c,v 1.13 2001/04/18 17:44:36 rsmith Exp rsmith $
+/* $Id: x11-ui.c,v 1.14 2001/06/02 10:51:32 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,9 @@
  * 
  * --------------------------------------------------------------------
  * $Log: x11-ui.c,v $
+ * Revision 1.14  2001/06/02 10:51:32  rsmith
+ * Updated copyright date.
+ *
  * Revision 1.13  2001/04/18 17:44:36  rsmith
  * Added the ZeroOnRequest flag.
  *
@@ -509,7 +512,7 @@ int main(int argc, char *argv[])
 
 void print_help()
 {
-  fprintf(stderr, "xnetload "VERSION", Copyright (C) 1997-2001 R.F. Smith\n");
+  fprintf(stderr, "xnetload "VERSION", Copyright (C) 1997-2001 R.F. Smith <rsmith@xs4all.nl>\n");
   fprintf(stderr, "Usage: xnetload [Xt args] [options] [interface]\n");
   fprintf(stderr,
           "xnetload understands all Xt standard command-line options.\n");
@@ -524,15 +527,10 @@ void print_help()
   fprintf(stderr, "-nv, -novalues    Don't display packets/s counts.\n");
   fprintf(stderr, "-ni, -nointerface Don't display `interface' line.\n");
   fprintf(stderr, "-kb, -kilobytes   Display count in kilobytes.\n");
-  fprintf(stderr, "-u,  -update      Number of seconds between screen.\n");
-  fprintf(stderr, "                  updates. (default is 1).\n");
+  fprintf(stderr, "-u,  -update      Number of seconds between screen updates. (default is 1).\n");
   fprintf(stderr, "-s,  -scale       Number to scale kilobyte chart by.\n");
-  fprintf(stderr, "-a,  -average     Number of samples to average.\n");
-  fprintf(stderr, "                  (default is 5).\n");
-  fprintf(stderr, "-zr, -zeroonreset Zero counters when resetting after\n");
-  fprintf(stderr, "                  the interface has gone down\n");
-  fprintf(stderr, "                  (e.g. ppp).\n");
-  
+  fprintf(stderr, "-a,  -average     Number of samples to average (default is 5).\n");
+  fprintf(stderr, "-zr, -zeroonreset Zero the counters after the interface has gone down.\n\n");
   fprintf(stderr,
           "The network interface to monitor can also be named on the\n");
   fprintf(stderr,
