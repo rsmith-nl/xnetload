@@ -1,6 +1,6 @@
 # Makefile for xnetload
 #
-# $Id: Makefile,v 1.5 2000/06/07 16:52:57 rsmith Exp rsmith $
+# $Id: Makefile,v 1.6 2000/09/26 19:48:55 rsmith Exp rsmith $
 #
 
 # Location to install the binary.
@@ -17,17 +17,17 @@ HDIRS = -I/usr/X11R6/include
 LDIRS = -L/usr/X11R6/lib
 
 # Compilation flags.
-# For gcc 2.95
-#CFLAGS = -pipe -Wall -O3 -mcpu=pentium -ffast-math -fomit-frame-pointer
+# For gcc 2.95, optimized
+#CFLAGS = -pipe -Wall -O3 -mcpu=pentium -ffast-math -fomit-frame-pointer -DNDEBUG
 # For gcc 2.7.x
-CFLAGS = -O2 -Wall -pipe -fomit-frame-pointer
+#CFLAGS = -O2 -Wall -pipe -fomit-frame-pointer -DNDEBUG
 # For debugging
-#CFLAGS = -g -Wall -DDEBUG 
+CFLAGS = -g -Wall
 
 # Linking flags
-LFLAGS = -pipe -Wall -s
+#LFLAGS = -pipe -Wall -s
 # Linking flags for debugging
-#LFLAGS = -pipe -Wall
+LFLAGS = -pipe -Wall
 
 # The compiler to use.
 CC = gcc
@@ -36,11 +36,10 @@ CC = gcc
 
 LIBS = -lXaw -lXmu -lXt -lX11 -lm
 
-
 # Package name and version: BASENAME-VMAJOR.VMINOR.tar.gz
 BASENAME = xnetload
 VMAJOR   = 1
-VMINOR   = 9
+VMINOR   = 10
 VPATCH   = 0
 
 # Directory in which this library is built
