@@ -1,6 +1,6 @@
 # Makefile for xnetload
 #
-# $Id: Makefile,v 1.1 1999/05/09 16:35:40 rsmith Exp rsmith $
+# $Id: Makefile,v 1.2 1999/10/06 20:56:58 rsmith Exp rsmith $
 #
 
 # Location to install the binary.
@@ -18,11 +18,16 @@ LDIRS = -L/usr/X11R6/lib
 
 # Compilation flags.
 # For gcc 2.95
-#CFLAGS = -pipe -Wall -Os -ffast-math -mcpu=pentium
-# For gcc 2.7.3
-CFLAGS = -O2 -Wall -pipe
+#CFLAGS = -pipe -Wall -O3 -mcpu=pentium -ffast-math -fomit-frame-pointer
+# For gcc 2.7.x
+CFLAGS = -O2 -Wall -pipe -fomit-frame-pointer
 # For debugging
 #CFLAGS = -g -Wall -DDEBUG 
+
+# Linking flags
+LFLAGS = -pipe -Wall -s
+# Linking flags for debugging
+#LFLAGS = -pipe -Wall
 
 # The compiler to use.
 CC = gcc
@@ -35,17 +40,19 @@ LIBS = -lXaw -lXmu -lXt -lX11 -lm
 # Package name and version: BASENAME-VMAJOR.VMINOR.tar.gz
 BASENAME = xnetload
 VMAJOR   = 1
-VMINOR   = 6
-VPATCH   = 1
+VMINOR   = 7
+VPATCH   = 0
 
 # Directory in which this library is built
 BUILDDIR = $(BASENAME)-$(VMAJOR).$(VMINOR)
 
 # If one of these is missing, comment them out!
 README  = $(BUILDDIR)/README
+CHLOG  = $(BUILDDIR)/CHANGELOG
 LICENSE = $(BUILDDIR)/LICENSE
 MANPAGE = $(BUILDDIR)/$(BASENAME).1
 APPDEF  = $(BUILDDIR)/XNetload
+EXTRAS = $(README) $(CHLOG)  $(LICENSE)  $(MANPAGE)  $(APPDEF) 
 
 # Predefined file names
 TARFILE = $(BASENAME)-$(VMAJOR).$(VMINOR).$(VPATCH).tar.gz
@@ -64,7 +71,7 @@ OBJS = data.o x11-ui.o
 
 # builds a binary.
 $(BASENAME): $(OBJS)
-	$(CC) $(CFLAGS) $(LDIRS) -o $(BASENAME) $(LIBS) $(OBJS)
+	$(CC) $(LFLAGS) $(LDIRS) -o $(BASENAME) $(LIBS) $(OBJS)
 
 # Remove all generated files.
 clean:;
@@ -90,9 +97,8 @@ uninstall:;
 
 # Build a tar distribution file. Only needed for the maintainer.
 dist:;
-	cd .. ; tar -czf $(BUILDDIR)/$(TARFILE) \
-	$(README) $(LICENSE) $(MANPAGE) \
-	$(BUILDDIR)/Makefile $(BUILDDIR)/depend $(APPDEF) \
+	cd .. ; tar -czf $(BUILDDIR)/$(TARFILE) $(EXTRAS) \
+	$(BUILDDIR)/Makefile $(BUILDDIR)/depend \
 	$(BUILDDIR)/*.h $(BUILDDIR)/*.c 
 
 # Make a backup, complete with the RCS files. Only for the maintainer.
@@ -108,5 +114,5 @@ depend: $(OBJS:.o=.c)
 .c.o:
 	$(CC) $(CXFLAGS) $(CPPFLAGS) $(HDIRS) -c -o $@ $<
 
-# DO NOT DELETE THIS LINE 
+# DO NOT DELETE THIS FOLLOWING LINE 
 include depend
