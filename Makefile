@@ -1,6 +1,6 @@
 # Makefile for xnetload
 #
-# $Id: Makefile,v 1.4 2000/04/14 20:21:34 rsmith Exp rsmith $
+# $Id: Makefile,v 1.5 2000/06/07 16:52:57 rsmith Exp rsmith $
 #
 
 # Location to install the binary.
@@ -40,8 +40,8 @@ LIBS = -lXaw -lXmu -lXt -lX11 -lm
 # Package name and version: BASENAME-VMAJOR.VMINOR.tar.gz
 BASENAME = xnetload
 VMAJOR   = 1
-VMINOR   = 8
-VPATCH   = 1
+VMINOR   = 9
+VPATCH   = 0
 
 # Directory in which this library is built
 BUILDDIR = $(BASENAME)-$(VMAJOR).$(VMINOR)
