@@ -1,4 +1,4 @@
-/* $Id: x11-ui.c,v 1.11 2000/09/26 19:50:31 rsmith Exp rsmith $
+/* $Id: x11-ui.c,v 1.12 2000/09/27 18:59:29 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,9 @@
  * 
  * --------------------------------------------------------------------
  * $Log: x11-ui.c,v $
+ * Revision 1.12  2000/09/27 18:59:29  rsmith
+ * Change kilo prefix from K to k.
+ *
  * Revision 1.11  2000/09/26 19:50:31  rsmith
  * Merged value-prefix patch from Jesper Dahlberg <jesper@swing.campus.luth.se>.
  *
@@ -154,6 +157,8 @@
 #define XtCscale        "Scale"
 #define XtNhelp         "help"
 #define XtChelp         "Help"
+#define XtNzeroOnReset	"zeroOnReset"
+#define XtCzeroOnReset	"ZeroOnReset"
 
 /* application resource data type */
 typedef struct {
@@ -161,6 +166,7 @@ typedef struct {
   Boolean no_values;
   Boolean no_interface;
   Boolean kilobytes;
+  Boolean zeroonreset;
   Boolean help;
   char *iface;
   int update;
@@ -275,6 +281,15 @@ static XtResource resources[] =
       XtOffsetOf(appdata_t, kilobytes),
       XtRBoolean,
       (XtPointer) False
+    },
+    {
+      XtNzeroOnReset,
+      XtCzeroOnReset,
+      XtRBoolean,
+      sizeof(Boolean),
+      XtOffsetOf(appdata_t, zeroonreset),
+      XtRBoolean,
+      (XtPointer) False
     }
 };
 
@@ -299,7 +314,9 @@ static XrmOptionDescRec options[] =
   {"-kb", "*kilobytes", XrmoptionNoArg, "True"},
   {"-kilobytes", "*kilobytes", XrmoptionNoArg, "True"},
   {"-s", "*scale", XrmoptionSepArg, NULL},
-  {"-scale", "*scale", XrmoptionSepArg, NULL}
+  {"-scale", "*scale", XrmoptionSepArg, NULL},
+  {"-zr", "*zeroOnReset", XrmoptionNoArg, "True"},
+  {"-zeroonreset", "*zeroOnReset", XrmoptionNoArg, "True"}
 };
 
 /* time at which the program was started  */
@@ -509,6 +526,9 @@ void print_help()
   fprintf(stderr, "-s,  -scale       Number to scale kilobyte chart by.\n");
   fprintf(stderr, "-a,  -average     Number of samples to average.\n");
   fprintf(stderr, "                  (default is 5).\n");
+  fprintf(stderr, "-zr, -zeroonreset Zero counters when resetting after\n");
+  fprintf(stderr, "                  the interface has gone down\n");
+  fprintf(stderr, "                  (e.g. ppp).\n");
   
   fprintf(stderr,
           "The network interface to monitor can also be named on the\n");
@@ -555,7 +575,7 @@ void refresh(XtPointer data, XtIntervalId * id)
   char *dev_str = "%s up: %i:%02i:%02i";
   char buf[128];
   /* read data from /proc/net/dev */
-  update_avg(appdata.update);
+  update_avg(appdata.update, appdata.zeroonreset);
   /* get new time */
   time(&newtime);
   /* calculate the number of seconds passed since start */
