@@ -1,4 +1,4 @@
-/* $Id: x11-ui.c,v 1.8 2000/04/14 19:36:20 rsmith Exp rsmith $
+/* $Id: x11-ui.c,v 1.9 2000/04/14 20:22:12 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,9 @@
  * 
  * --------------------------------------------------------------------
  * $Log: x11-ui.c,v $
+ * Revision 1.9  2000/04/14 20:22:12  rsmith
+ * Updated the copyright notice for 2000.
+ *
  * Revision 1.8  2000/04/14 19:36:20  rsmith
  * Added -h, -? and --help switches.
  * Shortened the values strings.
@@ -515,7 +518,7 @@ void get_out_value(Widget w, XtPointer client_data, XtPointer value)
   if (appdata.kilobytes) {
     *(double *)value = (double)average.out/(1024*appdata.scale);
   } else {
-    if (average.in < 1.0) {
+    if (average.out < 1.0) {
       *(double *)value = (double)0;
     } else {
       *(double *)value = log10(average.out);
