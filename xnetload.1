@@ -1,11 +1,14 @@
-.\" $Id$
+.\" $Id: xnetload.1,v 1.1 1999/05/09 16:41:08 rsmith Exp rsmith $
 .\"
 .\" This is the manual page for version 1.6 of xnetload.
 .\"
-.\" $Log$
+.\" $Log: xnetload.1,v $
+.\" Revision 1.1  1999/05/09 16:41:08  rsmith
+.\" Initial revision
 .\"
 .\"
-.TH XNETLOAD 1 "9 Feb 1999" "" ""
+.\"
+.TH XNETLOAD 1 "6 Oct 1999" "" ""
 
 .SH NAME
 xnetload \- Displays packet (or bytes) traffic and uptime for a
@@ -44,6 +47,11 @@ It accepts the following options:
 \fB-novalues\fP or \fB-nv\fP
 This inhibits showing the traffic numbers.
 .TP
+\fB-nointerface\fP or \fB-ni\fP
+This inhibits showing of the "interface" line at the top of the
+window. Combining  \fB-nv\fP and \fB-ni\fP comes in handy when using
+xnetload as a dock applet. 
+.TP
 \fB-nocharts\fP or \fB-nc\fP
 This inhibits the display of packet traffic graphs.
 .TP
@@ -78,6 +86,12 @@ command-line option \fB-if\fP.
 This is a boolean value that, if True, inhibits the display of the packet
 count value. It defaults to \fBFalse\fP. This resource can be set to True
 on the command-line by specifying the \fB-nv\fP option.
+.TP
+\fBnoInterface\fP (class \fBNoInterface\fP) 
+This is a boolean value that, if True, inhibits the display of the
+interface line at the top of the window. It defaults to \fBFalse\fP. 
+This resource can be set to True on the command-line by specifying the 
+\fB-ni\fP option.
 .TP
 \fBnoCharts\fP (class \fBNoCharts\fP) 
 This is a boolean value that, if True, inhibits the display of the packet
@@ -117,6 +131,9 @@ set to True, the StripCharts are missing.
 
 If the \fB-novalues\fP option is given, or the \fBnoValues\fP resource is
 set to True, the Labels \fIin\fP and \fIout\fP are missing.
+
+If the \fB-nointerface\fP option is given, or the \fBnoInterface\fP resource is
+set to True, the Label \fIinterface\fP is missing.
 
 .SH FILES
 .I /proc/net/dev 
