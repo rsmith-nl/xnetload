@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.8 2000/04/14 20:22:50 rsmith Exp rsmith $
+/* $Id: data.c,v 1.9 2001/04/18 17:43:54 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,11 @@
  * 
  * ------------------------------------------------------------------------
  * $Log: data.c,v $
+ * Revision 1.9  2001/04/18 17:43:54  rsmith
+ * ZeroOnRequest added to update_avg.
+ * Added a function to search for the exact interface name.
+ * Added assertions to aid in debugging.
+ *
  * Revision 1.8  2000/04/14 20:22:50  rsmith
  * Updated the copyright notice for 2000.
  *
@@ -76,8 +81,8 @@
  *
  */
 
-#include <assert.h>
-#include <ctype.h>
+#include <assert.h>     /* for error checking */
+#include <ctype.h>      /* for isspace() */
 #include <limits.h>
 #include <math.h>
 #include <stdio.h>
