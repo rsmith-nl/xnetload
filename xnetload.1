@@ -1,8 +1,12 @@
-.\" $Id: xnetload.1,v 1.6 2000/04/14 19:56:46 rsmith Exp rsmith $
+.\" $Id: xnetload.1,v 1.7 2000/09/26 19:56:52 rsmith Exp rsmith $
 .\"
-.\" This is the manual page for version 1.9 of xnetload.
+.\" This is the manual page for version 1.10 of xnetload.
 .\"
 .\" $Log: xnetload.1,v $
+.\" Revision 1.7  2000/09/26 19:56:52  rsmith
+.\" Fixed a documentation bug. The option/resource for not showing the byte
+.\" counts is -nv/noValues, not -nv/noCharts!
+.\"
 .\" Revision 1.6  2000/04/14 19:56:46  rsmith
 .\" Updated the manual page for the interface changes.
 .\"
@@ -24,7 +28,7 @@
 .\"
 .\"
 .\"
-.TH XNETLOAD 1 "2000-9-26" "version 1.9" ""
+.TH XNETLOAD 1 "2001-4-21" "version 1.10" ""
 
 .SH NAME
 xnetload \- Displays packet (or bytes) traffic and uptime for a
@@ -37,7 +41,7 @@ network connection in an X window.
 
 .SH DESCRIPTION
 
-This manual page documents version 1.9 of \fBxnetload\fP, a program that
+This manual page documents version 1.10 of \fBxnetload\fP, a program that
 displays the number of bytes (or packets) transmitted per second in
 and out of the system over a network connection, in an X window. If the
 interface it is assigned to monitor goes offline, xnetload terminates itself.
@@ -65,7 +69,7 @@ can be scaled by a command-line parameter (\fB-s\fP \fIfactor\fP).
 The line of text and the graph are repeated for outgoing bytes.
 
 This program requires the /proc filesystem. If you want to display (k)bytes/s
-you'll need a 2.1.x kernel or a 2.2.x kernel. As of version 1.7.0, support
+you'll need a 2.1.x kernel or newer kernel. As of version 1.7.0, support
 for ip-accounting for 2.0.x kernels is dropped. Version 1.6.1 is still
 available for those wishing to use ip-accounting on a 2.0.x kernel.
 
@@ -109,6 +113,10 @@ The name of the network \fIinterface\fP to monitor, e.g.
 for the loopback device, or
 .B sl0
 for the first slip device.
+.TP
+\fB-zeroonreset\fP or \fB-zr\fP
+Resets the counters to zero, if the interface has gone down, or the counter
+in the kernel has rolled over.
 
 .SH RESOURCES
 In addition to the resources available to the widget, xnetload also defines
@@ -151,6 +159,11 @@ command-line with the \fB-u\fP or \fB-update\fP option.
 \fBagv\fP (class \fBAvg\fP)
 The number of samples that is averaged. This resource can also be set on
 the command-line with the \fB-a\fP or \fB-average\fP option.
+.TP
+\fBzeroOnReset\fP (class \fBZeroOnReset\fP)
+Resets the counters to zero, if the interface has gone down, or the counter
+in the kernel has rolled over. This resource can also be set on
+the command-line with the \fB-zr\fP or \fB-zeroonreset\fP option.
 
 .SH WIDGETS
 The widget tree for \fIxnetload\fP is as shown below. It shows the widget
@@ -230,7 +243,7 @@ It requires Linux, since it needs the /proc filesystem,
 especially the /proc/net/dev file.
 
 The format of the /proc/net/dev file has changed over time. Xnetload works
-with 2.0.32-36, 2.1.86+ and 2.2.x kernels. If you have a kernel that
+with 2.0.32+, 2.2.x and 2.4.x kernels. If you have a kernel that
 does not work with xnetload, please send the maintainer a listing of your
 /proc/net/dev file, so the source can be updated.
 
@@ -256,5 +269,3 @@ more details.
 You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc., 675
 Mass Ave, Cambridge, MA 02139, USA.
-
-
