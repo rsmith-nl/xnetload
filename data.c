@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.4 2000/01/01 21:26:05 rsmith Exp rsmith $
+/* $Id: data.c,v 1.5 2000/02/22 17:47:37 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,10 @@
  * 
  * ------------------------------------------------------------------------
  * $Log: data.c,v $
+ * Revision 1.5  2000/02/22 17:47:37  rsmith
+ * Implements the `total' count. Initial patch by
+ * Paul Schilling <pfschill@bigfoot.com>, update by rsmith.
+ *
  * Revision 1.4  2000/01/01 21:26:05  rsmith
  * Release 1.7.1b3
  *
@@ -201,27 +205,31 @@ void update_avg(int seconds)
   /* Try to detect counter overrun. current and last are floating point
    * values, but current is filled from a %u, and so capped to UINT_MAX */
   if (current.in < last.in) {
-    current.in += (UINT_MAX - last.in);
+    diff.in = current.in + (UINT_MAX - last.in) - last.in;
     printf("xnetload warning: incoming counter overrun.\n");
+  } else {
+    diff.in = current.in - last.in;
   }
   if (current.out < last.out) {
-    current.out += (UINT_MAX - last.out);
+    diff.out = current.out + (UINT_MAX - last.out) - last.out;
     printf("xnetload warning: outgoing counter overrun.\n");
+  } else {
+    diff.out = current.out - last.out;
   }
 
-  /* Calculate the difference with the last call */
-  diff.in = (current.in - last.in)/seconds;
-  diff.out = (current.out - last.out)/seconds;
+  /* Add that to the total */
+  total.in  += diff.in;
+  total.out += diff.out;
+
+  /* Calculate the difference per update */
+  diff.in /= seconds;
+  diff.out /= seconds;
   /* Update the arrays. */
   inarray[index] = diff.in;
   outarray[index++] = diff.out;
   if (index == numavg) {
     index = 0;
   }
-
-  /* Add to the total */
-  total.in  += current.in;
-  total.out += current.out;
 
   /* Calculate the average */
   average.in = average.out = (float)0;
