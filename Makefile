@@ -1,6 +1,6 @@
 # Makefile for xnetload
 #
-# $Id$
+# $Id: Makefile,v 1.1 1999/05/09 16:35:40 rsmith Exp rsmith $
 #
 
 # Location to install the binary.
@@ -17,8 +17,12 @@ HDIRS = -I/usr/X11R6/include
 LDIRS = -L/usr/X11R6/lib
 
 # Compilation flags.
+# For gcc 2.95
+#CFLAGS = -pipe -Wall -Os -ffast-math -mcpu=pentium
+# For gcc 2.7.3
 CFLAGS = -O2 -Wall -pipe
-#CFLAGS = -g -Wall -DDEBUG # for debugging
+# For debugging
+#CFLAGS = -g -Wall -DDEBUG 
 
 # The compiler to use.
 CC = gcc
@@ -32,7 +36,7 @@ LIBS = -lXaw -lXmu -lXt -lX11 -lm
 BASENAME = xnetload
 VMAJOR   = 1
 VMINOR   = 6
-VPATCH   = 0
+VPATCH   = 1
 
 # Directory in which this library is built
 BUILDDIR = $(BASENAME)-$(VMAJOR).$(VMINOR)
