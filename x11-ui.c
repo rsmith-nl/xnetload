@@ -1,9 +1,10 @@
-/* $Id: x11-ui.c,v 1.17 2002/07/15 17:22:58 rsmith Exp rsmith $
+/* $Id: x11-ui.c,v 1.18 2002/10/03 16:02:52 rsmith Exp rsmith $
+ * Time-stamp: "2003-03-16 11:28:27 rsmith"
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
  *
- * Copyright (C) 1997 - 2001  R.F. Smith <rsmith@xs4all.nl>
+ * Copyright (C) 1997 - 2003  R.F. Smith <rsmith@xs4all.nl>
  *
  * You can contact the author at the following address:
  *      email: rsmith@xs4all.nl
@@ -28,6 +29,10 @@
  * 
  * --------------------------------------------------------------------
  * $Log: x11-ui.c,v $
+ * Revision 1.18  2002/10/03 16:02:52  rsmith
+ * The -update flag did not alter the refresh period for the graphs. Thanks to
+ * Walter Francis <wally@theblackmoor.net> for pointing this out.
+ *
  * Revision 1.17  2002/07/15 17:22:58  rsmith
  * Reformatted with 'indent -kr -i8'.
  * Added structured comments.

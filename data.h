@@ -1,9 +1,10 @@
-/*  $Id$
+/*  $Id: data.h,v 1.8 2002/07/15 18:12:21 rsmith Exp rsmith $
+ * Time-stamp: "2003-03-16 11:26:37 rsmith"
  * --------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
  *
- * Copyright (C) 1997 - 2000  R.F. Smith <rsmith@xs4all.nl>
+ * Copyright (C) 1997 - 2003  R.F. Smith <rsmith@xs4all.nl>
  *
  * You can contact the author at the following address:
  *      email: rsmith@xs4all.nl
@@ -28,6 +29,9 @@
  * 
  * --------------------------------------------------------------------
  * $Log: data.h,v $
+ * Revision 1.8  2002/07/15 18:12:21  rsmith
+ * Reformatted with 'indent -kr -i8'.
+ *
  * Revision 1.7  2001/04/18 17:41:12  rsmith
  * ZeroOnRequest added to update_avg.
  *

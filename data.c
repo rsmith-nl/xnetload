@@ -1,9 +1,10 @@
-/* $Id: data.c,v 1.12 2001/06/26 13:22:43 rsmith Exp rsmith $
+/* $Id: data.c,v 1.13 2002/07/15 18:11:37 rsmith Exp rsmith $
+ * Time-stamp: "2003-03-16 11:25:12 rsmith"
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
  *
- * Copyright (C) 1997 - 2000  R.F. Smith <rsmith@xs4all.nl>
+ * Copyright (C) 1997 - 2003  R.F. Smith <rsmith@xs4all.nl>
  *
  * You can contact the author at the following address:
  *      email: rsmith@xs4all.nl
@@ -28,6 +29,10 @@
  * 
  * ------------------------------------------------------------------------
  * $Log: data.c,v $
+ * Revision 1.13  2002/07/15 18:11:37  rsmith
+ * Reformatted with 'indent -kr -i8'.
+ * Added structured comments.
+ *
  * Revision 1.12  2001/06/26 13:22:43  rsmith
  * Remove overflow messages (pointed out by adrian.bridgett@iname.com).
  *
