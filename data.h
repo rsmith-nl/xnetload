@@ -1,4 +1,4 @@
-/*  $Id: data.h,v 1.6 2000/04/14 20:23:26 rsmith Exp rsmith $
+/*  $Id$
  * --------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,9 @@
  * 
  * --------------------------------------------------------------------
  * $Log: data.h,v $
+ * Revision 1.7  2001/04/18 17:41:12  rsmith
+ * ZeroOnRequest added to update_avg.
+ *
  * Revision 1.6  2000/04/14 20:23:26  rsmith
  * Updated the copyright notice for 2000.
  *
@@ -66,31 +69,25 @@
 
 /* contains number of outgoing/incoming packets or bytes */
 typedef struct {
-  float in;    /* incoming packets/bytes */
-  float out;   /* outgoing packets/bytes */
+	float in;		/* incoming packets/bytes */
+	float out;		/* outgoing packets/bytes */
 } count_t;
 
 /********** Global variables **********/
-extern count_t average;   /* average count */
-extern count_t max;       /* maximum count */
-extern count_t total;     /* total count   */
+extern count_t average;		/* average count */
+extern count_t max;		/* maximum count */
+extern count_t total;		/* total count   */
 
 /* Values for `type' */
 #define BYTES_TYPE      0
 #define PACKETS_TYPE    1
-extern int type;           /* What kind of data is gathered */
+extern int type;		/* What kind of data is gathered */
 
 /********** Functions **********/
 
-/* Report a fatal error and exit. */
 extern void report_error(char *msg);
-
-/* Initialize the data gathering process. Sets the variables `type' and
-   `where', for future reference. Returns `type' */
-extern int initialize(char *iface, int num_avg/*  , int kb */);
+extern int initialize(char *iface, int num_avg);
 extern int cleanup(void);
+extern void update_avg(int seconds, int zero_on_reset);
 
-/* Read the new counts and update the `average' and `max' and 'total'. */
-extern void update_avg(int seconds, int zeroOnReset );
-
-#endif /* _DATA_H */
+#endif				/* _DATA_H */
