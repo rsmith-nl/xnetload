@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.8 2001/06/02 10:21:04 rsmith Exp rsmith $
+# $Id: Makefile,v 1.9 2001/06/02 10:38:38 rsmith Exp rsmith $
 # This is the Makefile for xnetload
 
 # If make complains about a missing file, run 'make depend' first
@@ -7,8 +7,8 @@
 CC = gcc
 
 # The next two lines are for building an executable suitable for debugging.
-CFLAGS = -pipe -g -O0 -Wall
-LFLAGS = -pipe -Wall
+CFLAGS = -pipe -g -O0 -Wall -I/usr/X11R6/include
+LFLAGS = -pipe -Wall -L/usr/X11R6/lib
 
 # The next two lines are for building an optimized program.
 #CFLAGS = -pipe -O2 -Wall -DNDEBUG
@@ -80,7 +80,7 @@ $(BASENAME).1.gz: $(BASENAME).1
 # Remove all generated files.
 clean:;
 	rm -f $(OBJS) $(BASENAME) *~ core \
-	$(TARFILE) $(BACKUP) $(LOG) $(BASENAME).1.gz
+	$(TARFILE) $(BACKUP) $(BASENAME).1.gz
 
 log: $(LOG)
 
