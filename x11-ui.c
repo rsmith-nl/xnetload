@@ -1,4 +1,4 @@
-/* $Id: x11-ui.c,v 1.6 2000/02/22 17:49:53 rsmith Exp rsmith $
+/* $Id: x11-ui.c,v 1.7 2000/02/22 17:51:56 rsmith Exp $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,9 @@
  * 
  * --------------------------------------------------------------------
  * $Log: x11-ui.c,v $
+ * Revision 1.7  2000/02/22 17:51:56  rsmith
+ * Updated fallback resources for greater width.
+ *
  * Revision 1.6  2000/02/22 17:49:53  rsmith
  * Implements scaling and totals feature. Initial patch by
  * Paul Schilling <pfschill@bigfoot.com>, some changes by rsmith.
@@ -134,6 +137,8 @@
 #define XtCkilobytes    "Kilobytes"
 #define XtNscale        "scale"
 #define XtCscale        "Scale"
+#define XtNhelp         "help"
+#define XtChelp         "Help"
 
 /* application resource data type */
 typedef struct {
@@ -141,6 +146,7 @@ typedef struct {
   Boolean no_values;
   Boolean no_interface;
   Boolean kilobytes;
+  Boolean help;
   char *iface;
   int update;
   int avg;
@@ -149,20 +155,29 @@ typedef struct {
 
 /* static variables */
 static appdata_t appdata;
-static char *in_alt[3] = {
-  "in:  %6.3f kB/s  max: %6.3f kB/s  total: %.3f MB",
-  "in:  %5.1f p/s  max: %5.1f p/s"
+static char *in_alt[2] = {
+  "in:  %.1f kB/s (%.1f kB/s) [%.1f MB]",
+  "in:  %.1f p/s  max: %.1f p/s"
 };
 static char *in_str = 0;
-static char *out_alt[3] = {
-  "out:  %6.3f kB/s  max: %6.3f kB/s  total: %.3f MB",
-  "out:  %5.1f p/s  max: %5.1f p/s"
+static char *out_alt[2] = {
+  "out:  %.1f kB/s (%.1f kB/s) [%.1f MB]",
+  "out:  %1.1f p/s  max: %.1f p/s"
 };
 static char *out_str = 0;
 
 /* application resource list */
 static XtResource resources[] =
 {
+    {
+      XtNhelp,
+      XtChelp,
+      XtRBoolean,
+      sizeof(Boolean),
+      XtOffsetOf(appdata_t, help),
+      XtRBoolean,
+      (XtPointer) False
+    },
     {
       XtNnoValues,
       XtCnoValues,
@@ -240,6 +255,9 @@ static XtResource resources[] =
 /* command line options */
 static XrmOptionDescRec options[] =
 {
+  {"-?", "*help", XrmoptionNoArg, "True"},
+  {"-h", "*help", XrmoptionNoArg, "True"},
+  {"--help", "*help", XrmoptionNoArg, "True"},
   {"-if", "*interface", XrmoptionSepArg, NULL},
   {"-interface", "*interface", XrmoptionSepArg, NULL},
   {"-ni", "*noInterface", XrmoptionNoArg, "True"},
@@ -269,8 +287,8 @@ static Widget toplevel, paned, interface, in, out, str_in, str_out;
 static String fallback_resources[] =
 {
   "*Label*background: LightGray",
-  "*Label*width: 380",
-  "*StripChart*width: 380",
+  "*Label*width: 280",
+  "*StripChart*width: 280",
   "*StripChart*height: 30",
   NULL
 };
@@ -329,11 +347,14 @@ int main(int argc, char *argv[])
                               resources,
                               XtNumber(resources),
                               NULL);
-#ifdef DEBUG
-  printf("appdata.update %d\n", appdata.update);
-  printf("appdata.avg %d\n", appdata.avg);
-  printf("appdata.scale %d\n", appdata.scale);
-#endif
+
+
+  /* check for help flags */
+  if (appdata.help == True) {
+      print_help();
+      return 1;
+  }
+
   /* check if interface was given */
   if (appdata.iface == 0) {
     if (argc > 1) {
@@ -444,9 +465,10 @@ void print_help()
   fprintf(stderr,
           "xnetload understands all Xt standard command-line options.\n");
   fprintf(stderr, "See X(1) for details. ");
-  fprintf(stderr, "Additional options are as follows:\n\n");
+  fprintf(stderr, "Additional options are as follows:\n");
   fprintf(stderr, "option name       option value\n");
   fprintf(stderr, "-----------       ------------\n");
+  fprintf(stderr, "-?. -h, --help    Display this help.\n");
   fprintf(stderr, "-if <name>,\n");
   fprintf(stderr, "-interface <name> Any device from /proc/net/dev.\n");
   fprintf(stderr, "-nc, -nocharts    Don't use charts.\n");
@@ -457,7 +479,7 @@ void print_help()
   fprintf(stderr, "                  updates. (default is 1).\n");
   fprintf(stderr, "-s,  -scale       Number to scale kilobyte chart by.\n");
   fprintf(stderr, "-a,  -average     Number of samples to average.\n");
-  fprintf(stderr, "                  (default is 5).\n\n");
+  fprintf(stderr, "                  (default is 5).\n");
   
   fprintf(stderr,
           "The network interface to monitor can also be named on the\n");
@@ -466,7 +488,6 @@ void print_help()
   fprintf(stderr, "with previous versions. ");
   fprintf(stderr,
           "However, the value of the `-if' option has precedence.\n");
-  fprintf(stderr, "\n");
 }
 
 /* Set the value that the StripChart widget str_in should display. */
@@ -501,7 +522,7 @@ void refresh(XtPointer data, XtIntervalId * id)
 {
   long hr, min, sec;		/* time vars  */
   time_t newtime;
-  char *dev_str = "interface: %s  up: %2i:%02i:%02i";
+  char *dev_str = "%s up: %i:%02i:%02i";
   char buf[128];
   /* read data from /proc/net/dev */
   update_avg(appdata.update);
