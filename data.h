@@ -1,4 +1,4 @@
-/*  $Id: data.h,v 1.3 1999/12/27 22:16:45 rsmith Exp rsmith $
+/*  $Id: data.h,v 1.4 2000/01/01 21:26:37 rsmith Exp rsmith $
  * --------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -28,6 +28,9 @@
  * 
  * --------------------------------------------------------------------
  * $Log: data.h,v $
+ * Revision 1.4  2000/01/01 21:26:37  rsmith
+ * Release 1.7.1b3
+ *
  * Revision 1.3  1999/12/27 22:16:45  rsmith
  * Fixed bugs for release 1.7.0b1
  *
@@ -63,6 +66,8 @@ typedef struct {
 /********** Global variables **********/
 extern count_t average;   /* average count */
 extern count_t max;       /* maximum count */
+extern count_t total;     /* total count   */
+
 /* Values for `type' */
 #define BYTES_TYPE      0
 #define PACKETS_TYPE    1
@@ -78,7 +83,7 @@ extern void report_error(char *msg);
 extern int initialize(char *iface, int num_avg/*  , int kb */);
 extern int cleanup(void);
 
-/* Read the new counts and update the `average' and `max'. */
+/* Read the new counts and update the `average' and `max' and 'total'. */
 extern void update_avg(int seconds);
 
 #endif /* _DATA_H */
