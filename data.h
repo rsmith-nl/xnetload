@@ -1,4 +1,4 @@
-/*  $Id$
+/*  $Id: data.h,v 1.1 1999/05/09 16:38:31 rsmith Exp rsmith $
  * --------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
@@ -27,8 +27,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
  * --------------------------------------------------------------------
- * $Log:$
- *
+ * $Log: data.h,v $
+ * Revision 1.1  1999/05/09 16:38:31  rsmith
+ * Put back into RCS.
  *
  * Revision 1.3  1998/06/21 09:55:05  rsmith
  * - Added Tony's patch for IP-acounting rules.
@@ -60,10 +61,6 @@ extern count_t max;        /* maximum count */
 #define BYTES_TYPE     1
 #define PACKETS_TYPE   2
 extern int type;           /* What kind of data is gathered */
-/* Values for `where' */
-#define IP_ACCT    1
-#define DEV        2
-extern int where;          /* Where to gather data from. */
 
 /********** Functions **********/
 
