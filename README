@@ -1,0 +1,105 @@
+$Id$
+
+This is the README file for xnetload 1.6 for Linux.
+
+Purpose
+-------
+This program displays network traffic and uptime for the network connection
+named on the command line. I originally wrote it to monitor my dial-up
+connection. It requires the /proc file system! It can use IP-accounting if
+it's available. 
+
+Changes 
+------- 
+version 1.5.1
+- Updated the program to use the new /proc/net/dev layout in the 2.1.9x
+  kernels. This also works with the 2.2.x kernels.
+
+version 1.5.0
+- Added a patch from Tony Mancill<tmancill@debian.org> to issue
+  IP-accounting rules if necessary. 
+- Changed the graphs to display log10 of the packet/byte count.
+
+version 1.4.2
+- Changed my e-mail address. The old address (rsmit06@ibm.net) will become
+  invalid in juli '98.
+
+version 1.4.1
+- Added patch level for bug-fixing :-)
+- Fixed a out-of bounds string write bug in `read_ip_acct'. Thanks to
+  Don May <d.may@computer.org> for spotting this.
+
+version 1.4
+- Fixed a bug in the code for calculating the average.
+- Code separated into data-gathering and user-interface.
+  (I'm thinking on adding a GTK+ interface for the next release, it would
+   be a compile-time choice between Xaw/GTK+ interface)
+- Modified it to make it work with 2.1.xx kernels.
+  Thanks to Adrian Bridgett <adrian.bridgett@poboxes.com> for sending in
+  this patch.
+- Added a fix to make it work with IP-aliases. Thanks to Raphael Wegmann
+  <wegmann@mail.psi.co.at> for contributing it.
+- It display bytes/s if IP-accounting is enabled.
+  Tony Mancill <tmancill@debian.org> submitted the basic code.
+- Displays bytes/s on a kernel that supports it. (2.1.xx)
+- The period over which the packet count is averaged can be changed in the
+  makefile.
+
+Version 1.3 employs some code for snooping on sockets. It wasn't publicly
+released, since it was a CPU hog, and only works on AF_UNIX type sockets.
+
+version 1.2:
+- Fixed a bug in reading large packet counts.
+  (Thanks to Rik Hemsley for spotting these.)
+- Added library and include-file paths to the makefile. 
+- Added Strip-Charts to display graphs of the network traffic.
+- Added resources and command-line options to make it more configurable.
+
+version 1.1:
+- The program now responds to the WM_DELETE_WINDOW message (by terminating
+  itself).
+
+Files
+-----
+The distribution should contain the following files:
+LICENSE         GNU General Public License.
+Makefile        Makefile for GNU make.
+README          :-)
+XNetload        Application defaults file for xnetload
+data.c          Data-collecting code.
+data.h          Header for data collecting code.
+x11-ui.c        Xt/Xaw user interface code.
+
+Building and installing the program
+----------------------------------
+- If you want to change the period over which xnetload averages packet and
+  byte counts, change the macro definition -DNUMAVG=5 in the CFLAGS 
+  in the makefile. The default is 5 seconds (NUMAVG=5)
+- To build the program invoke 'make'.
+- Optionally strip the binary to save some disk space: 'strip xnetload'.
+- To install the program, invoke 'make install' *as root*.
+- Optionally, edit the application-defaults file (XNetload), and copy it
+  (as root) to a place where X can find it. Usually a "app-defaults" 
+  directory in the X directory tree. On my system it is the
+  /var/X11R6/lib/app-defaults/ directory.
+
+
+If you don't like it, login as root, change to the source directory and run
+'make uninstall'. After that you can remove the source tree.
+
+Contact the author
+------------------
+For questions, remarks and bug reports about the source release contact
+the author at the following address.
+
+    e-mail: rsmith@xs4all.nl
+snail-mail: R.F. Smith
+            Dr. Hermansweg 36
+            5624 HR Eindhoven
+            The Netherlands
+
+I only release source code packages. IMHO this is the best way to work
+around library versions and related difficulties. (It also means that other
+people, using the source, can find the bugs that I overlooked :-) If you
+want to build a binary package, by all means do so, but please identify it
+as your doing and responsibility.
