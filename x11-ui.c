@@ -1,9 +1,9 @@
-/* $Id: x11-ui.c,v 1.12 2000/09/27 18:59:29 rsmith Exp rsmith $
+/* $Id: x11-ui.c,v 1.13 2001/04/18 17:44:36 rsmith Exp rsmith $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
  *
- * Copyright (C) 1997 - 2000  R.F. Smith <rsmith@xs4all.nl>
+ * Copyright (C) 1997 - 2001  R.F. Smith <rsmith@xs4all.nl>
  *
  * You can contact the author at the following address:
  *      email: rsmith@xs4all.nl
@@ -28,6 +28,9 @@
  * 
  * --------------------------------------------------------------------
  * $Log: x11-ui.c,v $
+ * Revision 1.13  2001/04/18 17:44:36  rsmith
+ * Added the ZeroOnRequest flag.
+ *
  * Revision 1.12  2000/09/27 18:59:29  rsmith
  * Change kilo prefix from K to k.
  *
@@ -506,7 +509,7 @@ int main(int argc, char *argv[])
 
 void print_help()
 {
-  fprintf(stderr, "xnetload "VERSION", Copyright (C) 1997-2000 R.F. Smith\n");
+  fprintf(stderr, "xnetload "VERSION", Copyright (C) 1997-2001 R.F. Smith\n");
   fprintf(stderr, "Usage: xnetload [Xt args] [options] [interface]\n");
   fprintf(stderr,
           "xnetload understands all Xt standard command-line options.\n");
