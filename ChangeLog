@@ -8,7 +8,7 @@
 
   as suggested by Roland Smith.
 
-2002-10-03  Roland Smith  <rsmith@slacker>
+2002-10-03  Roland Smith  <rsmith@xs4all.nl>
 
   * Makefile: Change patchlevel 2->3 due to bugfix.
 
@@ -16,7 +16,7 @@
   The -update flag did not alter the refresh period for the graphs. Thanks to
   Walter Francis <wally@theblackmoor.net> for pointing this out.
 
-2002-07-23  Roland Smith  <rsmith@slacker>
+2002-07-23  Roland Smith  <rsmith@xs4all.nl>
 
   * Makefile.static, Makefile:
   Corrected version number error: VMAJOR 0->1.
@@ -30,7 +30,7 @@
 
   * Makefile: Updated to latest Makefile template.
 
-2002-07-15  Roland Smith  <rsmith@slacker>
+2002-07-15  Roland Smith  <rsmith@xs4all.nl>
 
   * Makefile: Changed patchlevel from 1.11.1 to 1.11.2.
 
@@ -39,7 +39,7 @@
   * data.c, x11-ui.c: Reformatted with 'indent -kr -i8'.
   Added structured comments.
 
-2001-06-26  Roland Smith  <rsmith@slacker>
+2001-06-26  Roland Smith  <rsmith@xs4all.nl>
 
   * xnetload.1: Some small changes in the wording of some sentences.
 
@@ -55,7 +55,7 @@
   * data.c:
   Remove overflow messages (pointed out by adrian.bridgett@iname.com).
 
-2001-06-02  Roland Smith  <rsmith@slacker>
+2001-06-02  Roland Smith  <rsmith@xs4all.nl>
 
   * README: Updated for version 1.11:
   Removed reference to NUMAVG #define that no longer exists.
@@ -76,7 +76,7 @@
   * Makefile:
   Added NDEBUG to optimized build. Upped minor version to 10.
 
-2001-04-21  Roland Smith  <rsmith@slacker>
+2001-04-21  Roland Smith  <rsmith@xs4all.nl>
 
   * README: Updated for release 1.10.
 
@@ -87,7 +87,7 @@
 
   * xnetload.1: Updated for 1.10
 
-2001-04-18  Roland Smith  <rsmith@slacker>
+2001-04-18  Roland Smith  <rsmith@xs4all.nl>
 
   * x11-ui.c: Added the ZeroOnRequest flag.
 
@@ -97,11 +97,11 @@
 
   * data.h: ZeroOnRequest added to update_avg.
 
-2000-09-27  Roland Smith  <rsmith@slacker>
+2000-09-27  Roland Smith  <rsmith@xs4all.nl>
 
   * x11-ui.c: Change kilo prefix from K to k.
 
-2000-09-26  Roland Smith  <rsmith@slacker>
+2000-09-26  Roland Smith  <rsmith@xs4all.nl>
 
   * xnetload.1:
   Fixed a documentation bug. The option/resource for not showing the byte
@@ -114,7 +114,7 @@
 
   * Makefile: Changed version number to 1.9.0.
 
-2000-06-07  Roland Smith  <rsmith@slacker>
+2000-06-07  Roland Smith  <rsmith@xs4all.nl>
 
   * Makefile: Updated for 1.8.1
 
@@ -123,7 +123,7 @@
   * x11-ui.c: Fixed bug in get_out_value. Fix contributed by
   Jesper Dahlberg <jesper@swing.campus.luth.se>
 
-2000-04-14  Roland Smith  <rsmith@slacker>
+2000-04-14  Roland Smith  <rsmith@xs4all.nl>
 
   * data.h, data.c, x11-ui.c: Updated the copyright notice for 2000.
 
@@ -138,7 +138,7 @@
   * data.c:
   Fixed overflow diff count bug pointed out by Adrian Bridgett
 
-2000-02-22  Roland Smith  <rsmith@slacker>
+2000-02-22  Roland Smith  <rsmith@xs4all.nl>
 
   * data.c: Changed the calculation of the `total' count.
 
@@ -153,7 +153,7 @@
   * data.h: Added `total' count. Patch provided by
   Paul Schilling <pfschill@bigfoot.com>.
 
-2000-02-17  Roland Smith  <rsmith@slacker>
+2000-02-17  Roland Smith  <rsmith@xs4all.nl>
 
   * CHANGELOG: Updated for 1.8.0
 
@@ -163,11 +163,11 @@
   Added the documentation for the -scale option by Paul Schilling
   <pfschill@bigfoot.com>.
 
-2000-01-01  Roland Smith  <rsmith@slacker>
+2000-01-01  Roland Smith  <rsmith@xs4all.nl>
 
   * data.h, data.c, x11-ui.c: Release 1.7.1b3
 
-1999-12-30  Roland Smith  <rsmith@slacker>
+1999-12-30  Roland Smith  <rsmith@xs4all.nl>
 
   * xnetload.1: Updated to 1.7.1b1
 
@@ -176,7 +176,7 @@
   * CHANGELOG: - Added 1.7.1 notice
   - Removed e-mail adresses
 
-1999-12-28  Roland Smith  <rsmith@slacker>
+1999-12-28  Roland Smith  <rsmith@xs4all.nl>
 
   * CHANGELOG: Added changes for 1.6.0 (from the homepage :-)
 
@@ -186,7 +186,7 @@
 
   * CHANGELOG: New file.
 
-1999-12-27  Roland Smith  <rsmith@slacker>
+1999-12-27  Roland Smith  <rsmith@xs4all.nl>
 
   * xnetload.1: Updated for 1.7
 
@@ -199,7 +199,7 @@
 
   * data.h: Remove references to `where' (for 1.7.0 release).
 
-1999-10-06  Roland Smith  <rsmith@slacker>
+1999-10-06  Roland Smith  <rsmith@xs4all.nl>
 
   * Makefile: Updated to 1.6.1
 
@@ -209,11 +209,11 @@
 
   * x11-ui.c: Added -ni option.
 
-1999-06-09  Roland Smith  <rsmith@slacker>
+1999-06-09  Roland Smith  <rsmith@xs4all.nl>
 
   * data.c: Enlarged the file buffer for /proc/net/xxx to 2048 bytes.
 
-1999-05-09  Roland Smith  <rsmith@slacker>
+1999-05-09  Roland Smith  <rsmith@xs4all.nl>
 
   * README, xnetload.1, x11-ui.c, data.c, data.h, Makefile: New file.
 
