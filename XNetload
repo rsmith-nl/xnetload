@@ -1,0 +1,12 @@
+! Sample application defaults for xnetload
+
+XNetload*Label*background: LightGray
+XNetload*Label*width: 200
+XNetload*StripChart*width: 200
+XNetload*StripChart*height: 30
+
+! Uncomment the next line to monitor the first PPP line
+!XNetload*interface: ppp0
+
+! Uncomment the next line if you want to use IP-accounting
+!XNettload*ipAcct: True
