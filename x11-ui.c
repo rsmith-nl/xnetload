@@ -1,10 +1,9 @@
-/* $Id: x11-ui.c,v 1.18 2002/10/03 16:02:52 rsmith Exp rsmith $
- * Time-stamp: "2003-03-16 11:28:27 rsmith"
+/* $Id: x11-ui.c,v 1.18 2002/10/03 16:02:52 rsmith Exp $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
  *
- * Copyright (C) 1997 - 2003  R.F. Smith <rsmith@xs4all.nl>
+ * Copyright (C) 1997 - 2001  R.F. Smith <rsmith@xs4all.nl>
  *
  * You can contact the author at the following address:
  *      email: rsmith@xs4all.nl

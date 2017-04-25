@@ -1,10 +1,9 @@
-/*  $Id: data.h,v 1.8 2002/07/15 18:12:21 rsmith Exp rsmith $
- * Time-stamp: "2003-03-16 11:26:37 rsmith"
+/*  $Id: data.h,v 1.8 2002/07/15 18:12:21 rsmith Exp $
  * --------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
  *
- * Copyright (C) 1997 - 2003  R.F. Smith <rsmith@xs4all.nl>
+ * Copyright (C) 1997 - 2000  R.F. Smith <rsmith@xs4all.nl>
  *
  * You can contact the author at the following address:
  *      email: rsmith@xs4all.nl
@@ -73,8 +72,8 @@
 
 /* contains number of outgoing/incoming packets or bytes */
 typedef struct {
-	float in;		/* incoming packets/bytes */
-	float out;		/* outgoing packets/bytes */
+	long double in;		/* incoming packets/bytes */
+	long double out;	/* outgoing packets/bytes */
 } count_t;
 
 /********** Global variables **********/

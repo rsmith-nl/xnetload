@@ -1,0 +1,219 @@
+2014-11-23  Bob Tennent <rdt@cs.queensu.ca>
+
+  To cope with larger numbers in /proc/net/dev:
+
+  *  change scanf codes in data.c from %lu to %llu
+  *  change type of values to unsigned long long
+  *  change type of fields of count_t in data.h to long double
+
+  as suggested by Roland Smith.
+
+2002-10-03  Roland Smith  <rsmith@slacker>
+
+  * Makefile: Change patchlevel 2->3 due to bugfix.
+
+  * x11-ui.c:
+  The -update flag did not alter the refresh period for the graphs. Thanks to
+  Walter Francis <wally@theblackmoor.net> for pointing this out.
+
+2002-07-23  Roland Smith  <rsmith@slacker>
+
+  * Makefile.static, Makefile:
+  Corrected version number error: VMAJOR 0->1.
+
+  * Makefile.static: New file.
+
+  * Makefile: Added Makefile.static to XTRA_DIST.
+
+  * README: Upped version number to 1.11.2.
+  Added Makefile.static and explanation.
+
+  * Makefile: Updated to latest Makefile template.
+
+2002-07-15  Roland Smith  <rsmith@slacker>
+
+  * Makefile: Changed patchlevel from 1.11.1 to 1.11.2.
+
+  * data.h: Reformatted with 'indent -kr -i8'.
+
+  * data.c, x11-ui.c: Reformatted with 'indent -kr -i8'.
+  Added structured comments.
+
+2001-06-26  Roland Smith  <rsmith@slacker>
+
+  * xnetload.1: Some small changes in the wording of some sentences.
+
+  * x11-ui.c: Reformatted and enhanced the online help message.
+
+  * Makefile: Changed patchlevel from 1.11.0 to 1.11.1.
+
+  * Makefile: Added -I/usr/X11R6/include to CFLAGS
+  Added -L/usr/X11R6/lib to LFLAGS
+  (thanks to Adrian Bridgett <adrian.bridgett@iname.com>, k.a.pronk@csar.nl and
+   Rolv Sverre Frøise <rolv.sverre@rolvs.org> for pointing this out)
+
+  * data.c:
+  Remove overflow messages (pointed out by adrian.bridgett@iname.com).
+
+2001-06-02  Roland Smith  <rsmith@slacker>
+
+  * README: Updated for version 1.11:
+  Removed reference to NUMAVG #define that no longer exists.
+  Changed the build instructions to reflect the new Makefile.
+
+  * x11-ui.c: Updated copyright date.
+
+  * data.c:
+  Added 'debug' macro. Added dynamic memory allocation for read
+  buffer. Removed old commented-out code.
+
+  * Makefile: The manual page is now installed in gzipped form.
+
+  * xnetload.1: Updated for release 1.11.
+
+  * Makefile: Upgraded to my new makefile standard.
+
+  * Makefile:
+  Added NDEBUG to optimized build. Upped minor version to 10.
+
+2001-04-21  Roland Smith  <rsmith@slacker>
+
+  * README: Updated for release 1.10.
+
+  * data.c: Forgotten credits:
+  Zeroonreset patch by William Burrow <aa126@fan.nb.ca>
+  Bug in detecting interfaces discovered by Sietse Visser
+  <sietse.visser@sysman.nl>
+
+  * xnetload.1: Updated for 1.10
+
+2001-04-18  Roland Smith  <rsmith@slacker>
+
+  * x11-ui.c: Added the ZeroOnRequest flag.
+
+  * data.c: ZeroOnRequest added to update_avg.
+  Added a function to search for the exact interface name.
+  Added assertions to aid in debugging.
+
+  * data.h: ZeroOnRequest added to update_avg.
+
+2000-09-27  Roland Smith  <rsmith@slacker>
+
+  * x11-ui.c: Change kilo prefix from K to k.
+
+2000-09-26  Roland Smith  <rsmith@slacker>
+
+  * xnetload.1:
+  Fixed a documentation bug. The option/resource for not showing the byte
+  counts is -nv/noValues, not -nv/noCharts!
+
+  * README: Changed version number to 1.9.0.
+
+  * x11-ui.c:
+  Merged value-prefix patch from Jesper Dahlberg <jesper@swing.campus.luth.se>.
+
+  * Makefile: Changed version number to 1.9.0.
+
+2000-06-07  Roland Smith  <rsmith@slacker>
+
+  * Makefile: Updated for 1.8.1
+
+  * README: Updated for 1.8.1.
+
+  * x11-ui.c: Fixed bug in get_out_value. Fix contributed by
+  Jesper Dahlberg <jesper@swing.campus.luth.se>
+
+2000-04-14  Roland Smith  <rsmith@slacker>
+
+  * data.h, data.c, x11-ui.c: Updated the copyright notice for 2000.
+
+  * Makefile: Added automatic CHANGLOG generation to the Makefile.
+
+  * xnetload.1: Updated the manual page for the interface changes.
+
+  * x11-ui.c: Added -h, -? and --help switches.
+  Shortened the values strings.
+  Shortened the interface string.
+
+  * data.c:
+  Fixed overflow diff count bug pointed out by Adrian Bridgett
+
+2000-02-22  Roland Smith  <rsmith@slacker>
+
+  * data.c: Changed the calculation of the `total' count.
+
+  * x11-ui.c: Updated fallback resources for greater width.
+
+  * x11-ui.c: Implements scaling and totals feature. Initial patch by
+  Paul Schilling <pfschill@bigfoot.com>, some changes by rsmith.
+
+  * data.c: Implements the `total' count. Initial patch by
+  Paul Schilling <pfschill@bigfoot.com>, update by rsmith.
+
+  * data.h: Added `total' count. Patch provided by
+  Paul Schilling <pfschill@bigfoot.com>.
+
+2000-02-17  Roland Smith  <rsmith@slacker>
+
+  * CHANGELOG: Updated for 1.8.0
+
+  * README: Updated to 1.8.0
+
+  * xnetload.1:
+  Added the documentation for the -scale option by Paul Schilling
+  <pfschill@bigfoot.com>.
+
+2000-01-01  Roland Smith  <rsmith@slacker>
+
+  * data.h, data.c, x11-ui.c: Release 1.7.1b3
+
+1999-12-30  Roland Smith  <rsmith@slacker>
+
+  * xnetload.1: Updated to 1.7.1b1
+
+  * CHANGELOG: Added counter overrun fix
+
+  * CHANGELOG: - Added 1.7.1 notice
+  - Removed e-mail adresses
+
+1999-12-28  Roland Smith  <rsmith@slacker>
+
+  * CHANGELOG: Added changes for 1.6.0 (from the homepage :-)
+
+  * README: Updated for 1.7.0
+
+  * Makefile: Updated for 1.7.0. Added CHANGELOG.
+
+  * CHANGELOG: New file.
+
+1999-12-27  Roland Smith  <rsmith@slacker>
+
+  * xnetload.1: Updated for 1.7
+
+  * x11-ui.c: Added -kb switch and all that goes with that.
+  Pulled out ip-acct & fixed bugs for release 1.7.0b1
+
+  * data.h: Fixed bugs for release 1.7.0b1
+
+  * data.c: Pulled out ip-acct & fixed bugs for release 1.7.0b1
+
+  * data.h: Remove references to `where' (for 1.7.0 release).
+
+1999-10-06  Roland Smith  <rsmith@slacker>
+
+  * Makefile: Updated to 1.6.1
+
+  * xnetload.1: Added -ni option.
+
+  * x11-ui.c: Updated online help for -ni option.
+
+  * x11-ui.c: Added -ni option.
+
+1999-06-09  Roland Smith  <rsmith@slacker>
+
+  * data.c: Enlarged the file buffer for /proc/net/xxx to 2048 bytes.
+
+1999-05-09  Roland Smith  <rsmith@slacker>
+
+  * README, xnetload.1, x11-ui.c, data.c, data.h, Makefile: New file.
+

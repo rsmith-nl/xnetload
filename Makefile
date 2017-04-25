@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.15 2002/07/23 09:04:09 rsmith Exp rsmith $
+# $Id: Makefile,v 1.16 2002/10/03 16:03:50 rsmith Exp $
 # This is the Makefile for xnetload
 
 # If make complains about a missing file, run 'make depend' first
@@ -36,7 +36,7 @@ MANDIR = /usr/local/man/man1
 BASENAME = xnetload
 VMAJOR   = 1
 VMINOR   = 11
-VPATCH   = 3
+VPATCH   = 4
 
 # Standard files that need to be included in the distribution
 DISTFILES = README COPYING Makefile $(BASENAME).1

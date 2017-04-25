@@ -1,10 +1,9 @@
-/* $Id: data.c,v 1.13 2002/07/15 18:11:37 rsmith Exp rsmith $
- * Time-stamp: "2003-03-16 11:25:12 rsmith"
+/* $Id: data.c,v 1.13 2002/07/15 18:11:37 rsmith Exp $
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
  *
- * Copyright (C) 1997 - 2003  R.F. Smith <rsmith@xs4all.nl>
+ * Copyright (C) 1997 - 2000  R.F. Smith <rsmith@xs4all.nl>
  *
  * You can contact the author at the following address:
  *      email: rsmith@xs4all.nl
@@ -128,15 +127,15 @@
 
 /********** Global variables **********/
 int type = 0;			/* What kind of data is gathered */
-count_t average = { (float) 0, (float) 0 };	/* average count */
-count_t max = { (float) 0, (float) 0 };	/* maximum count */
-count_t total = { (float) 0, (float) 0 };	/* total count   */
+count_t average = { (double) 0, (double) 0 };	/* average count */
+count_t max = { (double) 0, (double) 0 };	/* maximum count */
+count_t total = { (double) 0, (double) 0 };	/* total count   */
 
 /********** Static variables **********/
 static char *iface_name;	/* Name of the interface to be queried. */
-static count_t last = { (float) 0, (float) 0 };	/* Previously read values. */
-static float *inarray;		/* Array for receive counts. */
-static float *outarray;		/* Array for transmit counts. */
+static count_t last = { (double) 0, (double) 0 };	/* Previously read values. */
+static double *inarray;		/* Array for receive counts. */
+static double *outarray;		/* Array for transmit counts. */
 static int numavg;		/* number of samples to average */
 
 /********** Function definitions **********/
@@ -204,19 +203,19 @@ int initialize(char *iface, int num_avg)
 	/* Initialize global variables. */
 	iface_name = iface;
 	numavg = num_avg;
-	average.in = (float) 0;
-	average.out = (float) 0;
-	total.in = (float) 0;
-	total.out = (float) 0;
+	average.in = (double) 0;
+	average.out = (double) 0;
+	total.in = (double) 0;
+	total.out = (double) 0;
 
-	inarray = (float *) malloc(numavg * sizeof(float));
-	outarray = (float *) malloc(numavg * sizeof(float));
+	inarray = (double *) malloc(numavg * sizeof(double));
+	outarray = (double *) malloc(numavg * sizeof(double));
 	if (inarray == 0 || outarray == 0) {
 		report_error("Memory allocation failed");
 	}
 	for (r = 0; r < numavg; r++) {
-		inarray[r] = (float) 0;
-		outarray[r] = (float) 0;
+		inarray[r] = (double) 0;
+		outarray[r] = (double) 0;
 	}
 
 	r = read_dev(&last, iface);
@@ -325,7 +324,7 @@ void update_avg(int seconds, int zero_on_reset)
 	}
 
 	/* Calculate the average */
-	average.in = average.out = (float) 0;
+	average.in = average.out = (double) 0;
 	for (i = 0; i < numavg; i++) {
 		average.in += inarray[i];
 		average.out += outarray[i];
@@ -398,7 +397,7 @@ int read_dev(count_t * pcnt, char *iface)
 	char *newbuf;
 	int num, retval;
 	char *pch;
-	unsigned long int values[16];
+	unsigned long long int values[16];
 
 	assert(pcnt != NULL);
 	assert(iface != NULL);
@@ -476,7 +475,7 @@ int read_dev(count_t * pcnt, char *iface)
 	 *                        16 compressed      14 multicast
 	 */
 	num = sscanf(pch,
-		     "%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
+		     "%llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu",
 		     &values[0], &values[1], &values[2], &values[3],
 		     &values[4], &values[5], &values[6], &values[7],
 		     &values[8], &values[9], &values[10], &values[11],
@@ -485,22 +484,22 @@ int read_dev(count_t * pcnt, char *iface)
 	case 11:		/* 2.0.xx kernel, can only read packets. */
 		retval = READ_PACKETS;
 		if (pcnt) {
-			pcnt->in = (float) values[0];
-			pcnt->out = (float) values[5];
+			pcnt->in = (double) values[0];
+			pcnt->out = (double) values[5];
 		}
 		break;
 	case 14:		/* 2.1.<90 kernel, can read byte counts. */
 		retval = READ_BYTES;
 		if (pcnt) {
-			pcnt->in = (float) values[0];
-			pcnt->out = (float) values[6];
+			pcnt->in = (double) values[0];
+			pcnt->out = (double) values[6];
 		}
 		break;
 	case 16:		/* 2.1.90+, 2.2.x or 2.4.x kernel, can read byte counts. */
 		retval = READ_BYTES;
 		if (pcnt) {
-			pcnt->in = (float) values[0];
-			pcnt->out = (float) values[8];
+			pcnt->in = (double) values[0];
+			pcnt->out = (double) values[8];
 		}
 		break;
 	default:
