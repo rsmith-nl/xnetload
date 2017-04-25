@@ -1,4 +1,4 @@
-This is the README file for xnetload 1.11.4 for Linux.
+This is the README file for xnetload for Linux.
 
 Purpose
 -------
@@ -8,7 +8,8 @@ connections. It requires the /proc file system!
 
 New versions
 ------------
-New versions of this program are always on github: 
+New versions of this program are always on github:
+https://github.com/rsmith-nl/xnetload
 
 Files
 -----
