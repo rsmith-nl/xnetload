@@ -37,23 +37,12 @@ VMAJOR   = 1
 VMINOR   = 11
 VPATCH   = 4
 
-# Standard files that need to be included in the distribution
-DISTFILES = README COPYING Makefile $(BASENAME).1
-
 # Source files.
 SRCS = data.c x11-ui.c
-
-# Extra stuff to add into the distribution.
-XTRA_DIST= XNetload Makefile.static
 
 ##### No editing necessary beyond this point
 # Object files.
 OBJS = $(SRCS:.c=.o)
-
-# Predefined directory/file names
-PKGDIR  = $(BASENAME)-$(VMAJOR).$(VMINOR).$(VPATCH)
-TARFILE = $(BASENAME)-$(VMAJOR).$(VMINOR).$(VPATCH).tar.gz
-BACKUP  = $(BASENAME)-backup-$(VMAJOR).$(VMINOR).$(VPATCH).tar.gz
 
 # Version number
 VERSION = -DVERSION=\"$(VMAJOR).$(VMINOR).$(VPATCH)\"
@@ -62,17 +51,9 @@ PACKAGE = -DPACKAGE=\"$(BASENAME)\"
 # Add to CFLAGS
 CFLAGS += $(VERSION) $(PACKAGE)
 
-.PHONY: clean install uninstall dist backup all
+.PHONY: clean install uninstall all
 
 all: $(BASENAME)
-
-LOG = ChangeLog
-
-$(LOG): $(SRCS) $(DISTFILES) $(XTRA_DIST)
-	rm -f $(LOG) 
-	rcs2log -i 2 -l 70 >$(LOG)
-
-DISTFILES += $(LOG)
 
 # builds a binary.
 $(BASENAME): $(OBJS)
@@ -80,8 +61,7 @@ $(BASENAME): $(OBJS)
 
 # Remove all generated files.
 clean:;
-	rm -f $(OBJS) $(BASENAME) *~ core \
-	$(TARFILE) $(BACKUP) $(LOG)
+	rm -f $(OBJS) $(BASENAME) *~ core
 
 # Install the program and manual page. You should be root to do this.
 install: $(BASENAME)
@@ -102,23 +82,6 @@ uninstall:;
 	fi
 	rm -f $(BINDIR)/$(BASENAME)
 	rm -f $(MANDIR)/$(BASENAME).1*
-
-# Build a tar distribution file. Only needed for the maintainer.
-dist: clean $(DISTFILES) $(XTRA_DIST)
-	rm -rf $(PKGDIR)
-	mkdir -p $(PKGDIR)
-	cp $(DISTFILES) $(XTRA_DIST) *.c *.h $(PKGDIR)
-	tar -czf $(TARFILE) $(PKGDIR)
-	rm -rf $(PKGDIR)
-
-# Make a backup, complete with the RCS files. Only for the maintainer.
-backup: clean $(LOG)
-	rm -rf /tmp/$(PKGDIR)
-	mkdir -p /tmp/$(PKGDIR)
-	cp -R -p * /tmp/$(PKGDIR)
-	CURDIR=`pwd`
-	cd /tmp ; tar -czf $(CURDIR)/$(BACKUP) $(PKGDIR)
-	rm -rf /tmp/$(PKGDIR)
 
 # if the file depend doesn't exist, run 'make depend' first.
 depend:
