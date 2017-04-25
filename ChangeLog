@@ -1,3 +1,10 @@
+2017-04-26 Roland Smith <rsmith@xs4all.nl>
+
+  Lifted the project history from RCS to git.
+  Removed the old RCS tags and histories.
+  Moved the project to github.
+
+
 2014-11-23  Bob Tennent <rdt@cs.queensu.ca>
 
   To cope with larger numbers in /proc/net/dev:
