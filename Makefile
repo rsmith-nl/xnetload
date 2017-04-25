@@ -1,4 +1,3 @@
-# $Id: Makefile,v 1.16 2002/10/03 16:03:50 rsmith Exp $
 # This is the Makefile for xnetload
 
 # If make complains about a missing file, run 'make depend' first

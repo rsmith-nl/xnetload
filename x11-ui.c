@@ -1,16 +1,9 @@
-/* $Id: x11-ui.c,v 1.18 2002/10/03 16:02:52 rsmith Exp $
+/* x11-ui.c
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
  *
- * Copyright (C) 1997 - 2001  R.F. Smith <rsmith@xs4all.nl>
- *
- * You can contact the author at the following address:
- *      email: rsmith@xs4all.nl
- * snail-mail: R.F. Smith
- *             Dr. Hermansweg 36
- *             5624 HR Eindhoven
- *             The Netherlands
+ * Copyright (C) 1997 - 2003  R.F. Smith <rsmith@xs4all.nl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,118 +18,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
- * --------------------------------------------------------------------
- * $Log: x11-ui.c,v $
- * Revision 1.18  2002/10/03 16:02:52  rsmith
- * The -update flag did not alter the refresh period for the graphs. Thanks to
- * Walter Francis <wally@theblackmoor.net> for pointing this out.
- *
- * Revision 1.17  2002/07/15 17:22:58  rsmith
- * Reformatted with 'indent -kr -i8'.
- * Added structured comments.
- *
- * Revision 1.16  2001/07/13 18:06:11  rsmith
- * #included stdlib.h for exit(3).
- *
- * Revision 1.15  2001/06/26 13:35:57  rsmith
- * Reformatted and enhanced the online help message.
- *
- * Revision 1.14  2001/06/02 10:51:32  rsmith
- * Updated copyright date.
- *
- * Revision 1.13  2001/04/18 17:44:36  rsmith
- * Added the ZeroOnRequest flag.
- *
- * Revision 1.12  2000/09/27 18:59:29  rsmith
- * Change kilo prefix from K to k.
- *
- * Revision 1.11  2000/09/26 19:50:31  rsmith
- * Merged value-prefix patch from Jesper Dahlberg <jesper@swing.campus.luth.se>.
- *
- * Revision 1.10  2000/06/07 16:49:04  rsmith
- * Fixed bug in get_out_value. Fix contributed by
- * Jesper Dahlberg <jesper@swing.campus.luth.se>
- *
- * Revision 1.9  2000/04/14 20:22:12  rsmith
- * Updated the copyright notice for 2000.
- *
- * Revision 1.8  2000/04/14 19:36:20  rsmith
- * Added -h, -? and --help switches.
- * Shortened the values strings.
- * Shortened the interface string.
- *
- * Revision 1.7  2000/02/22 17:51:56  rsmith
- * Updated fallback resources for greater width.
- *
- * Revision 1.6  2000/02/22 17:49:53  rsmith
- * Implements scaling and totals feature. Initial patch by
- * Paul Schilling <pfschill@bigfoot.com>, some changes by rsmith.
- *
- * Revision 1.5  2000/01/01 21:24:56  rsmith
- * Release 1.7.1b3
- *
- * Revision 1.4  1999/12/27 22:17:45  rsmith
- * Added -kb switch and all that goes with that.
- * Pulled out ip-acct & fixed bugs for release 1.7.0b1
- *
- * Revision 1.3  1999/10/06 20:55:38  rsmith
- * Updated online help for -ni option.
- *
- * Revision 1.2  1999/10/06 20:42:53  rsmith
- * Added -ni option.
- *
- * Revision 1.1  1999/05/09 16:40:15  rsmith
- * Initial revision
- *
- *
- *
- * Revision 1.5  1998/06/21 09:58:23  rsmith
- * Changed get_*_value functions to make the graphs diplay log10
- * of the pachet/byte count.
- *
- * Revision 1.4  1998/06/21 09:12:03  rsmith
- * Added IP-accounting rules patch by Tony Mancill.
- *
- * Revision 1.3  1998/06/14 12:24:59  rsmith
- * Changed e-mail address.
- *
- * Revision 1.2  1998/05/04 18:23:27  rsmit06
- * Updated online help.
- *
- * Revision 1.1  1998/04/10 19:52:29  rsmit06
- * Initial revision. Split the code in user interface and
- * data gathering part.
- *
- * Revision 1.2.1.4  1998/03/09 19:26:42  rsmit06
- * - Added fix for IP-aliases from R. Wegmann
- * - Added support for 2.1.xx kernels from Adrian Bridgett
- * - Added support for using IP-accounting by Tony Mancill
- *
- * Revision 1.2.1.3  1997/12/10 21:25:48  rsmit06
- * - Added grips to label and stripchart
- * - Added maximum packet/s.
- *
- * Revision 1.2.1.2  1997/12/06 16:05:42  rsmit06
- * Added `print_help' function.
- * Cast `recavg' and `transavg' to float in sprintf calls.
- *
- * Revision 1.2.1.1  1997/12/06 16:00:26  rsmit06
- * Changed `device' to `interface'.
- *
- * Revision 1.2  1997/12/06 14:26:34  rsmit06
- * - Removed bug in GetPacketCount that makes it fail on large numbers of
- *   packets. Reported by Rik Hemsley <hemsleyr@keyline.co.uk>.
- * - Added StripChart widgets. Changed form Form to Paned constraint widget.
- * - Added command-line arguments & resources.
- *
- * Revision 1.1  1997/12/06 13:25:38  rsmit06
- * The program now responds to the WM_DELETE_WINDOW message by terminating.
- *
- * Revision 1.0  1997/12/06 10:25:25  rsmit06
- * Initial revision
- *
- *
  */
 
 /* X Toolkit include files */

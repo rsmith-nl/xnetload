@@ -1,16 +1,9 @@
-/*  $Id: data.h,v 1.8 2002/07/15 18:12:21 rsmith Exp $
+/*  data.h
  * --------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
  *
- * Copyright (C) 1997 - 2000  R.F. Smith <rsmith@xs4all.nl>
- *
- * You can contact the author at the following address:
- *      email: rsmith@xs4all.nl
- * snail-mail: R.F. Smith
- *             Dr. Hermansweg 36
- *             5624 HR Eindhoven
- *             The Netherlands
+ * Copyright (C) 1997 - 2003  R.F. Smith <rsmith@xs4all.nl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,50 +18,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
- * --------------------------------------------------------------------
- * $Log: data.h,v $
- * Revision 1.8  2002/07/15 18:12:21  rsmith
- * Reformatted with 'indent -kr -i8'.
- *
- * Revision 1.7  2001/04/18 17:41:12  rsmith
- * ZeroOnRequest added to update_avg.
- *
- * Revision 1.6  2000/04/14 20:23:26  rsmith
- * Updated the copyright notice for 2000.
- *
- * Revision 1.5  2000/02/22 17:41:29  rsmith
- * Added `total' count. Patch provided by
- * Paul Schilling <pfschill@bigfoot.com>.
- *
- * Revision 1.4  2000/01/01 21:26:37  rsmith
- * Release 1.7.1b3
- *
- * Revision 1.3  1999/12/27 22:16:45  rsmith
- * Fixed bugs for release 1.7.0b1
- *
- * Revision 1.2  1999/12/27 18:54:22  rsmith
- * Remove references to `where' (for 1.7.0 release).
- *
- * Revision 1.1  1999/05/09 16:38:31  rsmith
- * Put back into RCS.
- *
- * Revision 1.3  1998/06/21 09:55:05  rsmith
- * - Added Tony's patch for IP-acounting rules.
- *
- * Revision 1.2  1998/06/14 12:24:10  rsmith
- * Changed e-mail address.
- *
- * Revision 1.1  1998/04/10 19:53:11  rsmit06
- * Initial revision
- *
- *
  */
 
 #ifndef _DATA_H
 #define _DATA_H
 
-/********** Type definitionss **********/
+/********** Type definitions **********/
 
 /* contains number of outgoing/incoming packets or bytes */
 typedef struct {

@@ -1,16 +1,9 @@
-/* $Id: data.c,v 1.13 2002/07/15 18:11:37 rsmith Exp $
+/* data.c
  * ------------------------------------------------------------------------
  * This file is part of xnetload, a program to monitor network traffic,
  * and display it in an X window.
  *
- * Copyright (C) 1997 - 2000  R.F. Smith <rsmith@xs4all.nl>
- *
- * You can contact the author at the following address:
- *      email: rsmith@xs4all.nl
- * snail-mail: R.F. Smith
- *             Dr. Hermansweg 36
- *             5624 HR Eindhoven
- *             The Netherlands
+ * Copyright (C) 1997 - 2003  R.F. Smith <rsmith@xs4all.nl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,77 +18,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
- * ------------------------------------------------------------------------
- * $Log: data.c,v $
- * Revision 1.13  2002/07/15 18:11:37  rsmith
- * Reformatted with 'indent -kr -i8'.
- * Added structured comments.
- *
- * Revision 1.12  2001/06/26 13:22:43  rsmith
- * Remove overflow messages (pointed out by adrian.bridgett@iname.com).
- *
- * Revision 1.11  2001/06/02 10:45:48  rsmith
- * Added 'debug' macro. Added dynamic memory allocation for read
- * buffer. Removed old commented-out code.
- *
- * Revision 1.10  2001/04/21 07:33:03  rsmith
- * Forgotten credits:
- * Zeroonreset patch by William Burrow <aa126@fan.nb.ca>
- * Bug in detecting interfaces discovered by Sietse Visser
- * <sietse.visser@sysman.nl>
- *
- * Revision 1.9  2001/04/18 17:43:54  rsmith
- * ZeroOnRequest added to update_avg.
- * Added a function to search for the exact interface name.
- * Added assertions to aid in debugging.
- *
- * Revision 1.8  2000/04/14 20:22:50  rsmith
- * Updated the copyright notice for 2000.
- *
- * Revision 1.7  2000/04/14 19:34:04  rsmith
- * Fixed overflow diff count bug pointed out by Adrian Bridgett
- *
- * Revision 1.6  2000/02/22 18:09:25  rsmith
- * Changed the calculation of the `total' count.
- *
- * Revision 1.5  2000/02/22 17:47:37  rsmith
- * Implements the `total' count. Initial patch by
- * Paul Schilling <pfschill@bigfoot.com>, update by rsmith.
- *
- * Revision 1.4  2000/01/01 21:26:05  rsmith
- * Release 1.7.1b3
- *
- * Revision 1.3  1999/12/27 22:16:23  rsmith
- * Pulled out ip-acct & fixed bugs for release 1.7.0b1
- *
- * Revision 1.2  1999/06/09 18:40:29  rsmith
- * Enlarged the file buffer for /proc/net/xxx to 2048 bytes.
- *
- * Revision 1.1  1999/05/09 16:39:26  rsmith
- * Initial revision
- *
- * Revision 1.6  1998/06/21 09:56:44  rsmith
- * - Added Tony's patch for emitting IP-accounting rules.
- *
- * Revision 1.5  1998/06/14 12:23:32  rsmith
- * Changed e-mail address.
- *
- * Revision 1.4  1998/05/24 19:55:07  rsmit06
- * Fixed a string overrun bug in read_ip_acct.
- * Thanks to Don May <d.may@computer.org>, who reported it.
- *
- * Revision 1.3  1998/05/06 21:19:17  rsmit06
- * Changed update_avg to make the program die if the interface disappears from
- * the /proc file. Braced the IP_FW_* defines in an #ifndef/#endif, so they
- * can be easily set from a makefile.
- *
- * Revision 1.2  1998/05/04 18:56:39  rsmit06
- * Changed the scanning of /proc/net/ip_acct, according to the kernel code.
- *
- * Revision 1.1  1998/04/10 19:53:32  rsmit06
- * Initial revision
- *
  */
 
 #include <assert.h>		/* for error checking */
