@@ -34,6 +34,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <math.h>
 
@@ -95,21 +96,23 @@ struct _appdata {
 /* static variables */
 static struct _appdata appdata;
 static char *in_alt[2] = {
-	"in:  %.1f %sB/s (%.1f %sB/s) [%.1f %sB]",
+	"in:  %.1f %sb/s (%.1f %sb/s) [%.1f %sB]",
 	"in:  %.1f p/s  max: %.1f p/s"
 };
 static char *in_str = 0;
 static char *out_alt[2] = {
-	"out:  %.1f %sB/s (%.1f %sB/s) [%.1f %sB]",
+	"out:  %.1f %sb/s (%.1f %sb/s) [%.1f %sB]",
 	"out:  %1.1f p/s  max: %.1f p/s"
 };
 static char *out_str = 0;
 
 /*
- * Definition of the prefixes.  A thousand exa bytes will be
- * a sufficient upper limit for quite a few years.  ;-)
+ * Definition of the prefixes.  Exbibytes is a sufficient upper prefix
+ * since the counters are in 64 bit format and can thus count up to
+ * just short of 16 exbibytes.
  */
-static char *prefix[] = { "", "k", "M", "G", "T", "P", "E" };
+static char *prefix_si[] = { "", "k", "M", "G", "T", "P", "E" };
+static char *prefix_iec[] = { "", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei" };
 
 struct prefixed_value {
 	float value;
@@ -255,7 +258,7 @@ void print_help();
 void refresh(XtPointer data, XtIntervalId * id);
 void get_in_value(Widget w, XtPointer client_data, XtPointer value);
 void get_out_value(Widget w, XtPointer client_data, XtPointer value);
-struct prefixed_value use_prefix(float value);
+struct prefixed_value use_prefix(float value, bool iec);
 
 /**
  * main - entry point for xnetload
@@ -523,9 +526,9 @@ void refresh(XtPointer data, XtIntervalId * id)
 	}
 	if (appdata.no_values == False) {
 		if (type == BYTES_TYPE) {
-			pval_average = use_prefix(average.in);
-			pval_max = use_prefix(max.in);
-			pval_total = use_prefix(total.in);
+			pval_average = use_prefix(8 * average.in, false);
+			pval_max = use_prefix(8 * max.in, false);
+			pval_total = use_prefix(total.in, true);
 			sprintf(buf, in_str, pval_average.value,
 				pval_average.prefix, pval_max.value,
 				pval_max.prefix, pval_total.value,
@@ -534,9 +537,9 @@ void refresh(XtPointer data, XtIntervalId * id)
 			sprintf(buf, in_str, average.in, max.in);
 		XtVaSetValues(in, XtNlabel, buf, NULL);
 		if (type == BYTES_TYPE) {
-			pval_average = use_prefix(average.out);
-			pval_max = use_prefix(max.out);
-			pval_total = use_prefix(total.out);
+			pval_average = use_prefix(8 * average.out, false);
+			pval_max = use_prefix(8 * max.out, false);
+			pval_total = use_prefix(total.out, true);
 			sprintf(buf, out_str, pval_average.value,
 				pval_average.prefix, pval_max.value,
 				pval_max.prefix, pval_total.value,
@@ -569,19 +572,23 @@ void xclose(Widget w, XEvent * event, String * params, Cardinal * num)
 /**
  * use_prefix - select an appropriate prefix for a value.
  * @value: the number that needs a prefix.
+ * @iec: true if IEC prefix should be used, false for SI prefix.
  *
- * Reduces the value to the range 0-1024, and selects the appropriate
- * prefix (K,M etc.).
+ * Reduces the value to the range 0-1024 or 0-1000, depending on whether
+ * the unit is bytes or bits respectively, and selects the appropriate
+ * prefix (Ki, M etc.).
  **/
-struct prefixed_value use_prefix(float value)
+struct prefixed_value use_prefix(const float value, const bool iec)
 {
-	int i;
 	struct prefixed_value pval;
 
 	pval.value = value;
-	for (i = 0; pval.value > 1024.0; i++) {
-		pval.value /= 1024.0;
+	const float divisor = iec? 1024.0: 1000.0;
+	int i;
+	for (i = 0; pval.value > divisor; i++) {
+		pval.value /= divisor;
 	}
+        char **prefix = iec? prefix_iec: prefix_si;
 	pval.prefix = prefix[i];
 
 	return pval;
