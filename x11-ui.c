@@ -574,9 +574,8 @@ void xclose(Widget w, XEvent * event, String * params, Cardinal * num)
  * @value: the number that needs a prefix.
  * @iec: true if IEC prefix should be used, false for SI prefix.
  *
- * Reduces the value to the range 0-1024 or 0-1000, depending on whether
- * the unit is bytes or bits respectively, and selects the appropriate
- * prefix (Ki, M etc.).
+ * Reduces the value to the range 0-1024 or 0-1000, depending on the
+ * iec argument, and selects the appropriate prefix (Ki, M etc.).
  **/
 struct prefixed_value use_prefix(const float value, const bool iec)
 {
